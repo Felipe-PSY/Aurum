@@ -80,7 +80,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({
     address: 'Calle 123 #45-67, Bogotá',
     whatsappNumber: '3012636880',
-    colors: { primary: '#0A0A0A', secondary: '#FFFFFF', accent: 'var(--color-accent)' },
+    colors: { primary: '#0A0A0A', secondary: '#FFFFFF', accent: '#D4AF37' },
     contactEmail: 'contacto@aurum.com',
     instagram: '@aurumjoyeria',
     businessHours: 'Lunes a Sábado: 10:00 - 20:00\nDomingos: Cita previa',
@@ -123,7 +123,14 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     }
 
     if (savedOrders) setOrders(JSON.parse(savedOrders));
-    if (savedConfig) setSiteConfig(JSON.parse(savedConfig));
+    if (savedConfig) {
+      const config = JSON.parse(savedConfig);
+      // Clean up legacy/broken color value if it exists
+      if (config.colors && config.colors.accent === 'var(--color-accent)') {
+        config.colors.accent = '#D4AF37';
+      }
+      setSiteConfig(config);
+    }
     if (savedLogs) setActivityLogs(JSON.parse(savedLogs));
   }, []);
 
