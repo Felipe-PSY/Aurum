@@ -53,6 +53,7 @@ interface Order {
   };
   metodoPago: string;
   status: 'Nuevo' | 'Pendiente' | 'En proceso' | 'Pagado' | 'Enviado' | 'Entregado' | 'Cancelado';
+  stockDeducted?: boolean;
 }
 
 interface SiteConfig {
@@ -294,7 +295,37 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   const updateOrderStatus = (id: string, status: Order['status']) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, status } : o));
+    setOrders(prevOrders => {
+      const orderIndex = prevOrders.findIndex(o => o.id === id);
+      if (orderIndex === -1) return prevOrders;
+
+      const order = prevOrders[orderIndex];
+      let updatedOrder = { ...order, status };
+
+      // Stock deduction logic: trigger when status is "Pagado" and it hasn't been deducted yet
+      if (status === 'Pagado' && !order.stockDeducted) {
+        setProducts(prevProducts => {
+          const newProducts = [...prevProducts];
+          order.items.forEach(item => {
+            const productIndex = newProducts.findIndex(p => p.id === (item.id || item.productId));
+            if (productIndex !== -1) {
+              const product = newProducts[productIndex];
+              const currentStock = product.stock || 0;
+              const newStock = Math.max(0, currentStock - item.quantity);
+              newProducts[productIndex] = { ...product, stock: newStock };
+            }
+          });
+          return newProducts;
+        });
+        
+        updatedOrder.stockDeducted = true;
+        addLog('inventory', `Descuento automático de stock por pedido #${id.slice(-6).toUpperCase()} marcado como Pagado`, 'Sistema');
+      }
+
+      const newOrders = [...prevOrders];
+      newOrders[orderIndex] = updatedOrder;
+      return newOrders;
+    });
   };
 
   const updateSiteConfig = (config: SiteConfig) => setSiteConfig(config);

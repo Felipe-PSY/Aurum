@@ -199,14 +199,6 @@ export function AdminOrdersPage() {
                         <button 
                           key={status}
                           onClick={() => {
-                            if (status === 'Entregado' && selectedOrder.status !== 'Entregado') {
-                              selectedOrder.items.forEach((item: any) => {
-                                const p = products.find(p => p.id === item.productId);
-                                if (p) {
-                                  updateProduct({ ...p, stock: Math.max(0, (p.stock || 0) - item.quantity) });
-                                }
-                              });
-                            }
                             updateOrderStatus(selectedOrder.id, status as any);
                             setSelectedOrder({ ...selectedOrder, status });
                             addLog('order', `Actualizó pedido #${selectedOrder.id.slice(-6).toUpperCase()} a ${status}`, user?.name || 'Admin');
