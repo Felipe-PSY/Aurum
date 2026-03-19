@@ -75,7 +75,7 @@ export function Footer() {
           </div>
 
           {/* Dynamic Footer Sections */}
-          {siteConfig.footerSections.map((section, idx) => (
+          {(siteConfig.footerSections || []).map((section, idx) => (
             <motion.div
               key={section.title}
               initial={{ opacity: 0, y: 20 }}

@@ -8,7 +8,31 @@ export interface HeroConfig {
   backgroundImage: string;
 }
 
-// Simplified interfaces - removed dynamic sections, banners, and footer links per requirements
+export interface HomeSection {
+  id: string;
+  name: string;
+  component: string;
+  isVisible: boolean;
+  order: number;
+}
+
+export interface Banner {
+  id: string;
+  image: string;
+  title: string;
+  link: string;
+}
+
+export interface FooterLink {
+  name: string;
+  href: string;
+}
+
+export interface FooterSection {
+  title: string;
+  links: FooterLink[];
+}
+
 interface Category {
   id: string;
   name: string;
@@ -43,7 +67,10 @@ interface SiteConfig {
   instagram: string;
   businessHours?: string;
   hero: HeroConfig;
+  homeSections: HomeSection[];
+  banners: Banner[];
   footerDescription: string;
+  footerSections: FooterSection[];
 }
 
 export interface ActivityLog {
@@ -90,7 +117,41 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       buttonText: 'EXPLORAR COLECCIÓN',
       backgroundImage: 'https://images.unsplash.com/photo-1763913603709-74997cc8a299?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBkaWFtb25kJTIwcmluZyUyMGVkaXRvcmlhbHxlbnwxfHx8fDE3NzM4NDkwNDB8MA&ixlib=rb-4.1.0&q=80&w=1080'
     },
-    footerDescription: 'Creando obras maestras de joyería atemporales desde 1962. Cada pieza es una celebración de la herencia, el arte y los momentos que más importan.'
+    homeSections: [],
+    banners: [],
+    footerDescription: 'Creando obras maestras de joyería atemporales desde 1962. Cada pieza es una celebración de la herencia, el arte y los momentos que más importan.',
+    footerSections: [
+      {
+        title: 'Colecciones',
+        links: [
+          { name: "Diamantes Signature", href: "#" },
+          { name: "Herencia Dorada", href: "#" },
+          { name: "Perfección en Perlas", href: "#" },
+          { name: "Colección Nupcial", href: "#" },
+          { name: "Ediciones Limitadas", href: "#" }
+        ]
+      },
+      {
+        title: 'Servicios',
+        links: [
+          { name: "Consulta Privada", href: "#" },
+          { name: "Diseño a Medida", href: "#" },
+          { name: "Reparación y Restauración", href: "#" },
+          { name: "Servicios de Tasación", href: "#" },
+          { name: "Registro de Regalos", href: "#" }
+        ]
+      },
+      {
+        title: 'Empresa',
+        links: [
+          { name: "Nuestra Herencia", href: "#" },
+          { name: "Artesanía", href: "#" },
+          { name: "Sostenibilidad", href: "#" },
+          { name: "Prensa y Medios", href: "#" },
+          { name: "Carreras", href: "#" }
+        ]
+      }
+    ]
   });
 
   useEffect(() => {
