@@ -219,6 +219,45 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           { id: 'banner-1', image: '', title: 'Colección Mujer', link: '#' }
         ];
       }
+
+      if (!config.footerSections || config.footerSections.length === 0) {
+        config.footerSections = [
+          {
+            title: 'Colecciones',
+            links: [
+              { name: "Diamantes Signature", href: "#" },
+              { name: "Herencia Dorada", href: "#" },
+              { name: "Perfección en Perlas", href: "#" },
+              { name: "Colección Nupcial", href: "#" },
+              { name: "Ediciones Limitadas", href: "#" }
+            ]
+          },
+          {
+            title: 'Servicios',
+            links: [
+              { name: "Consulta Privada", href: "#" },
+              { name: "Diseño a Medida", href: "#" },
+              { name: "Reparación y Restauración", href: "#" },
+              { name: "Servicios de Tasación", href: "#" },
+              { name: "Registro de Regalos", href: "#" }
+            ]
+          },
+          {
+            title: 'Empresa',
+            links: [
+              { name: "Nuestra Herencia", href: "#" },
+              { name: "Artesanía", href: "#" },
+              { name: "Sostenibilidad", href: "#" },
+              { name: "Prensa y Medios", href: "#" },
+              { name: "Carreras", href: "#" }
+            ]
+          }
+        ];
+      }
+
+      if (!config.footerDescription) {
+        config.footerDescription = 'Creando obras maestras de joyería atemporales desde 1962. Cada pieza es una celebración de la herencia, el arte y los momentos que más importan.';
+      }
       
       setSiteConfig(config);
     }
