@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
 import { motion } from 'motion/react';
-import { ShoppingBag, ChevronLeft, Star, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
+import { ShoppingBag, ChevronLeft, Star, ShieldCheck, Truck, RefreshCw, Plus, Minus } from 'lucide-react';
 import { products } from '../data/products';
 import { useCart } from '../context/CartContext';
 import { ImageWithFallback } from '../components/ImageWithFallback';
@@ -10,13 +10,17 @@ import { CheckoutModal } from '../components/CheckoutModal';
 
 export function ProductDetailPage() {
   const { id } = useParams();
-  const { addToCart } = useCart();
+  const { cart, addToCart, updateQuantity } = useCart();
   const [activeImage, setActiveImage] = useState(0);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const product = useMemo(() => 
     products.find(p => p.id === Number(id)), 
   [id]);
+
+  const cartItem = useMemo(() => 
+    cart.find(item => item.id === Number(id)), 
+  [cart, id]);
 
   const relatedProducts = useMemo(() => {
     if (!product) return [];
@@ -128,13 +132,33 @@ export function ProductDetailPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                  onClick={() => addToCart(product)}
-                  className="flex-1 flex items-center justify-center gap-3 py-5 bg-white text-black font-bold text-xs tracking-[0.2em] uppercase hover:bg-brand-accent transition-all duration-500"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  Añadir a la Bolsa
-                </button>
+                {!cartItem ? (
+                  <button 
+                    onClick={() => addToCart(product)}
+                    className="flex-1 flex items-center justify-center gap-3 py-5 bg-white text-black font-bold text-xs tracking-[0.2em] uppercase hover:bg-brand-accent transition-all duration-500"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    Añadir a la Bolsa
+                  </button>
+                ) : (
+                  <div className="flex-1 flex items-center bg-white border border-brand-accent/20 overflow-hidden shadow-sm">
+                    <button 
+                      onClick={() => updateQuantity(product.id, -1)}
+                      className="flex-1 py-5 flex items-center justify-center hover:bg-brand-accent hover:text-black transition-colors text-black border-r border-brand-accent/10"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <div className="px-8 py-5 text-black font-bold font-['Montserrat'] text-sm min-w-[4rem] text-center">
+                      {cartItem.quantity}
+                    </div>
+                    <button 
+                      onClick={() => updateQuantity(product.id, 1)}
+                      className="flex-1 py-5 flex items-center justify-center hover:bg-brand-accent hover:text-black transition-colors text-black border-l border-brand-accent/10"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
                 <button 
                   onClick={() => setIsCheckoutOpen(true)}
                   className="flex-1 py-5 bg-brand-accent text-black font-bold text-xs tracking-[0.2em] uppercase hover:bg-white transition-all duration-500"
@@ -172,8 +196,8 @@ export function ProductDetailPage() {
       <CheckoutModal 
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
-        items={[{ ...product, quantity: 1 }]}
-        total={product.price}
+        items={cartItem ? [cartItem] : [{ ...product, quantity: 1 }]}
+        total={cartItem ? cartItem.price * cartItem.quantity : product.price}
       />
       </div>
     </div>
