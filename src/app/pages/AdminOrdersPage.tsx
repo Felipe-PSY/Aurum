@@ -13,7 +13,7 @@ import {
 import { CustomDropdown } from '../components/CustomDropdown';
 
 export function AdminOrdersPage() {
-  const { products, orders, updateOrderStatus, updateProduct, addLog } = useDb();
+  const { orders, updateOrderStatus, addLog } = useDb();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
