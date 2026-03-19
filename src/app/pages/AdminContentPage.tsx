@@ -7,14 +7,7 @@ import {
   Save,
   Monitor,
   Smartphone,
-  CheckCircle2,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  Image as ImageIcon,
-  Type,
-  Star as StarIcon,
-  X as CloseIcon
+  CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { useDb } from '../context/DbContext';
@@ -27,7 +20,6 @@ export function AdminContentPage() {
   const [isSaved, setIsSaved] = useState(false);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [localConfig, setLocalConfig] = useState(siteConfig);
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalConfig(siteConfig);
@@ -140,7 +132,6 @@ export function AdminContentPage() {
                         { id: 'cat-destacadas', name: 'Categorías Destacadas', component: 'CollectionSection' },
                         { id: 'sobre-aurum', name: 'Sobre Aurum', component: 'BrandStorySection' },
                         { id: 'col-reciente', name: 'Colección Reciente', component: 'ProductSection' },
-                        { id: 'promo-banners', name: 'Banners Promocionales', component: 'PromoBanner' },
                         { id: 'experiencia-lujo', name: 'Experiencia de Lujo', component: 'LuxuryExperienceSection' },
                         { id: 'testimonios', name: 'Testimonios', component: 'TestimonialSection' },
                         { id: 'galeria', name: 'Galería', component: 'GallerySection' }
@@ -174,62 +165,48 @@ export function AdminContentPage() {
                       ...localConfig, 
                       homeSections: newOrder.map((s, idx) => ({ ...s, order: idx })) 
                     })}
-                    className="space-y-3"
+                    className="space-y-4"
                   >
                     {localConfig.homeSections.sort((a,b) => a.order - b.order).map(sec => {
                       const controls = useDragControls();
-                      const isSelected = selectedSectionId === sec.id;
                       return (
                         <Reorder.Item 
                           key={sec.id} 
                           value={sec}
                           dragListener={false}
                           dragControls={controls}
-                          layout
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          className={`flex items-center justify-between p-4 bg-white/5 border transition-all cursor-default group ${isSelected ? 'border-brand-accent ring-1 ring-brand-accent/20 bg-brand-accent/5' : 'border-white/5 hover:border-white/10'}`}
+                          className="flex items-center justify-between p-4 bg-white/5 border border-white/5 group hover:border-brand-accent/30 transition-all cursor-default"
                         >
-                          <div className="flex items-center gap-4 flex-1" onClick={() => setSelectedSectionId(sec.id)}>
+                          <div className="flex items-center gap-4">
                             <div 
                               onPointerDown={(e) => controls.start(e)}
-                              className="cursor-grab active:cursor-grabbing p-2 -ml-2 hover:text-brand-accent transition-colors hidden group-hover:block"
+                              className="cursor-grab active:cursor-grabbing p-1 -ml-1 hover:text-brand-accent transition-colors"
                             >
-                              <Move className="w-3.5 h-3.5 text-white/20" />
+                              <Move className="w-4 h-4 text-white/10 group-hover:text-white/30" />
                             </div>
-                            <div className="flex flex-col">
-                              <span className={`text-[10px] uppercase tracking-[0.2em] font-bold ${isSelected ? 'text-brand-accent' : 'text-white/60'}`}>{sec.name}</span>
-                              <span className="text-[8px] text-white/10 uppercase tracking-widest">{sec.component}</span>
-                            </div>
+                            <span className="text-xs text-white uppercase tracking-widest">{sec.name}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                             <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const newSections = localConfig.homeSections.map(s => 
-                                    s.id === sec.id ? { ...s, isVisible: !s.isVisible } : s
-                                  );
-                                  updateGlobalConfig({ ...localConfig, homeSections: newSections });
-                                }}
-                                className={`p-2 transition-colors ${sec.isVisible ? 'text-emerald-400 opacity-100' : 'text-white/10 hover:text-white/30'}`}
-                                title={sec.isVisible ? 'Ocultar sección' : 'Mostrar sección'}
-                              >
-                                {sec.isVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                              </button>
-                             <div className="w-px h-4 bg-white/5"></div>
-                             <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const newSections = localConfig.homeSections.filter(s => s.id !== sec.id);
-                                  updateGlobalConfig({ ...localConfig, homeSections: newSections });
-                                  if (selectedSectionId === sec.id) setSelectedSectionId(null);
-                                }}
-                                className="p-2 text-white/10 hover:text-red-400 hover:bg-red-400/5 transition-all"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                             </button>
-                             <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isSelected ? 'rotate-90 text-brand-accent' : 'text-white/10'}`} />
+                          <div className="flex items-center gap-4">
+                            <button 
+                              onClick={() => {
+                                const newSections = localConfig.homeSections.map(s => 
+                                  s.id === sec.id ? { ...s, isVisible: !s.isVisible } : s
+                                );
+                                updateGlobalConfig({ ...localConfig, homeSections: newSections });
+                              }}
+                              className={`text-[9px] font-bold tracking-tighter uppercase transition-colors ${sec.isVisible ? 'text-green-400' : 'text-white/20'}`}
+                            >
+                              {sec.isVisible ? 'Visible' : 'Oculto'}
+                            </button>
+                            <button 
+                              onClick={() => {
+                                const newSections = localConfig.homeSections.filter(s => s.id !== sec.id);
+                                updateGlobalConfig({ ...localConfig, homeSections: newSections });
+                              }}
+                              className="p-2 text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
                           </div>
                         </Reorder.Item>
                       );
@@ -237,412 +214,6 @@ export function AdminContentPage() {
                   </Reorder.Group>
                 </div>
               </section>
-
-              {/* Dynamic Section Editor */}
-              <AnimatePresence mode="wait">
-                {selectedSectionId && (
-                  <motion.section 
-                    key={selectedSectionId}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="bg-brand-secondary border border-brand-accent/20 p-8 space-y-8 relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 p-4">
-                       <button onClick={() => setSelectedSectionId(null)} className="p-2 text-white/20 hover:text-white transition-colors">
-                         <CloseIcon className="w-4 h-4" />
-                       </button>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center">
-                         <Type className="w-4 h-4 text-brand-accent" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-['Montserrat'] text-xs font-bold tracking-[0.2em] uppercase">
-                          Editando: {localConfig.homeSections.find(s => s.id === selectedSectionId)?.name}
-                        </h3>
-                        <p className="text-[10px] text-white/20 uppercase tracking-widest mt-1">Personaliza el contenido de esta sección</p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-8 animate-in fade-in duration-500">
-                      {/* Section Content Editor Logic */}
-                      {selectedSectionId === 'cat-destacadas' && (
-                        <div className="space-y-6">
-                           <div className="grid md:grid-cols-2 gap-6">
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Título de la Sección</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.collections.title} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, collections: { ...localConfig.sectionContent.collections, title: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Subtítulo (Acento)</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.collections.subtitle} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, collections: { ...localConfig.sectionContent.collections, subtitle: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                           </div>
-                           <div className="space-y-4">
-                              <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Colecciones (Máx 3)</label>
-                              <div className="grid md:grid-cols-3 gap-6">
-                                 {localConfig.sectionContent.collections.items.map((item, idx) => (
-                                   <div key={item.id} className="p-4 bg-white/5 border border-white/5 space-y-4">
-                                      <div className="aspect-video bg-black/40 relative group overflow-hidden">
-                                         {item.image ? <img src={item.image} className="w-full h-full object-cover opacity-50" /> : <ImageIcon className="w-8 h-8 absolute inset-0 m-auto text-white/5" />}
-                                         <input 
-                                           type="text" 
-                                           placeholder="URL de Imagen"
-                                           value={item.image}
-                                           onChange={(e) => {
-                                             const newItems = [...localConfig.sectionContent.collections.items];
-                                             newItems[idx].image = e.target.value;
-                                             updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, collections: { ...localConfig.sectionContent.collections, items: newItems } } });
-                                           }}
-                                           className="absolute bottom-0 left-0 w-full bg-black/80 p-2 text-[8px] text-white/60 focus:text-white outline-none translate-y-full group-hover:translate-y-0 transition-transform"
-                                         />
-                                      </div>
-                                      <input 
-                                        type="text" 
-                                        value={item.title}
-                                        onChange={(e) => {
-                                          const newItems = [...localConfig.sectionContent.collections.items];
-                                          newItems[idx].title = e.target.value;
-                                          updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, collections: { ...localConfig.sectionContent.collections, items: newItems } } });
-                                        }}
-                                        className="w-full bg-transparent border-b border-white/10 pb-2 text-xs text-white font-bold outline-none"
-                                      />
-                                      <textarea 
-                                        value={item.description}
-                                        onChange={(e) => {
-                                          const newItems = [...localConfig.sectionContent.collections.items];
-                                          newItems[idx].description = e.target.value;
-                                          updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, collections: { ...localConfig.sectionContent.collections, items: newItems } } });
-                                        }}
-                                        className="w-full bg-transparent text-[10px] text-white/40 outline-none resize-none"
-                                        rows={2}
-                                      />
-                                   </div>
-                                 ))}
-                              </div>
-                           </div>
-                        </div>
-                      )}
-
-                      {selectedSectionId === 'sobre-aurum' && (
-                        <div className="space-y-6">
-                           <div className="grid md:grid-cols-2 gap-6">
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Título Principal</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.brandStory.title} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, brandStory: { ...localConfig.sectionContent.brandStory, title: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Subtítulo</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.brandStory.subtitle} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, brandStory: { ...localConfig.sectionContent.brandStory, subtitle: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                           </div>
-                           <div className="space-y-2">
-                             <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Párrafo 1</label>
-                             <textarea 
-                               value={localConfig.sectionContent.brandStory.p1} 
-                               onChange={(e) => updateGlobalConfig({
-                                 ...localConfig,
-                                 sectionContent: { ...localConfig.sectionContent, brandStory: { ...localConfig.sectionContent.brandStory, p1: e.target.value } }
-                               })}
-                               className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none resize-none" 
-                               rows={3} 
-                             />
-                           </div>
-                           <div className="space-y-2">
-                             <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Párrafo 2</label>
-                             <textarea 
-                               value={localConfig.sectionContent.brandStory.p2} 
-                               onChange={(e) => updateGlobalConfig({
-                                 ...localConfig,
-                                 sectionContent: { ...localConfig.sectionContent, brandStory: { ...localConfig.sectionContent.brandStory, p2: e.target.value } }
-                               })}
-                               className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none resize-none" 
-                               rows={3} 
-                             />
-                           </div>
-                        </div>
-                      )}
-
-                      {selectedSectionId === 'testimonios' && (
-                        <div className="space-y-6">
-                           <div className="grid md:grid-cols-2 gap-6">
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Título</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.testimonials.title} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, testimonials: { ...localConfig.sectionContent.testimonials, title: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Subtítulo</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.testimonials.subtitle} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, testimonials: { ...localConfig.sectionContent.testimonials, subtitle: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                           </div>
-                           <div className="space-y-4">
-                              <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Testimonios</label>
-                              <div className="grid md:grid-cols-2 gap-6">
-                                 {localConfig.sectionContent.testimonials.items.map((item, idx) => (
-                                   <div key={item.id} className="p-4 bg-white/5 border border-white/5 space-y-4">
-                                      <div className="flex gap-4 items-center">
-                                         <div className="w-12 h-12 rounded-full bg-black/40 overflow-hidden">
-                                            {item.image && <img src={item.image} className="w-full h-full object-cover" />}
-                                         </div>
-                                         <div className="flex-1">
-                                            <input 
-                                              type="text" 
-                                              value={item.name}
-                                              onChange={(e) => {
-                                                const newItems = [...localConfig.sectionContent.testimonials.items];
-                                                newItems[idx].name = e.target.value;
-                                                updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, testimonials: { ...localConfig.sectionContent.testimonials, items: newItems } } });
-                                              }}
-                                              className="w-full bg-transparent text-xs text-white font-bold outline-none"
-                                              placeholder="Nombre"
-                                            />
-                                            <input 
-                                              type="text" 
-                                              value={item.title}
-                                              onChange={(e) => {
-                                                const newItems = [...localConfig.sectionContent.testimonials.items];
-                                                newItems[idx].title = e.target.value;
-                                                updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, testimonials: { ...localConfig.sectionContent.testimonials, items: newItems } } });
-                                              }}
-                                              className="w-full bg-transparent text-[8px] text-white/20 outline-none"
-                                              placeholder="Cargo/Título"
-                                            />
-                                         </div>
-                                      </div>
-                                      <textarea 
-                                        value={item.text}
-                                        onChange={(e) => {
-                                          const newItems = [...localConfig.sectionContent.testimonials.items];
-                                          newItems[idx].text = e.target.value;
-                                          updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, testimonials: { ...localConfig.sectionContent.testimonials, items: newItems } } });
-                                        }}
-                                        className="w-full bg-transparent text-[10px] text-white/40 outline-none resize-none italic"
-                                        rows={3} 
-                                      />
-                                      <div className="flex gap-1">
-                                         {[...Array(5)].map((_, i) => (
-                                           <StarIcon key={i} className={`w-3 h-3 ${i < item.rating ? 'fill-brand-accent text-brand-accent' : 'text-white/10'}`} />
-                                         ))}
-                                      </div>
-                                   </div>
-                                 ))}
-                              </div>
-                           </div>
-                        </div>
-                      )}
-
-                      {selectedSectionId === 'experiencia-lujo' && (
-                        <div className="space-y-6">
-                           <div className="grid md:grid-cols-2 gap-6">
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Título</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.luxuryExperience.title} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, luxuryExperience: { ...localConfig.sectionContent.luxuryExperience, title: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Subtítulo</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.luxuryExperience.subtitle} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, luxuryExperience: { ...localConfig.sectionContent.luxuryExperience, subtitle: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                           </div>
-                           <div className="space-y-4">
-                              <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Características (Features)</label>
-                              <div className="grid md:grid-cols-2 gap-6">
-                                 {localConfig.sectionContent.luxuryExperience.features.map((feature, idx) => (
-                                   <div key={idx} className="p-4 bg-white/5 border border-white/5 space-y-4">
-                                      <div className="flex gap-4 items-center">
-                                         <div className="w-10 h-10 bg-brand-accent/10 flex items-center justify-center">
-                                            <StarIcon className="w-4 h-4 text-brand-accent" />
-                                         </div>
-                                         <div className="flex-1">
-                                            <input 
-                                              type="text" 
-                                              value={feature.title}
-                                              onChange={(e) => {
-                                                const newFeatures = [...localConfig.sectionContent.luxuryExperience.features];
-                                                newFeatures[idx].title = e.target.value;
-                                                updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, luxuryExperience: { ...localConfig.sectionContent.luxuryExperience, features: newFeatures } } });
-                                              }}
-                                              className="w-full bg-transparent text-xs text-white font-bold outline-none"
-                                              placeholder="Título"
-                                            />
-                                         </div>
-                                      </div>
-                                      <textarea 
-                                        value={feature.description}
-                                        onChange={(e) => {
-                                          const newFeatures = [...localConfig.sectionContent.luxuryExperience.features];
-                                          newFeatures[idx].description = e.target.value;
-                                          updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, luxuryExperience: { ...localConfig.sectionContent.luxuryExperience, features: newFeatures } } });
-                                        }}
-                                        className="w-full bg-transparent text-[10px] text-white/40 outline-none resize-none"
-                                        rows={2}
-                                      />
-                                   </div>
-                                 ))}
-                              </div>
-                           </div>
-                        </div>
-                      )}
-
-                      {selectedSectionId === 'col-reciente' && (
-                        <div className="space-y-6">
-                           <div className="grid md:grid-cols-2 gap-6">
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Título</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.productSection.title} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, productSection: { ...localConfig.sectionContent.productSection, title: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Subtítulo</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.productSection.subtitle} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, productSection: { ...localConfig.sectionContent.productSection, subtitle: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                           </div>
-                           <div className="p-8 border border-white/5 bg-white/2 rounded-lg text-center">
-                              <p className="text-[10px] text-white/20 uppercase tracking-widest">Los productos mostrados en esta sección son los más recientes del catálogo automáticamente.</p>
-                           </div>
-                        </div>
-                      )}
-
-                      {selectedSectionId === 'galeria' && (
-                        <div className="space-y-6">
-                           <div className="grid md:grid-cols-2 gap-6">
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Título</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.gallery.title} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, gallery: { ...localConfig.sectionContent.gallery, title: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                              <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Subtítulo</label>
-                                <input 
-                                  type="text" 
-                                  value={localConfig.sectionContent.gallery.subtitle} 
-                                  onChange={(e) => updateGlobalConfig({
-                                    ...localConfig,
-                                    sectionContent: { ...localConfig.sectionContent, gallery: { ...localConfig.sectionContent.gallery, subtitle: e.target.value } }
-                                  })}
-                                  className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none" 
-                                />
-                              </div>
-                           </div>
-                           <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-                              {localConfig.sectionContent.gallery.images.map((img, idx) => (
-                                <div key={img.id} className="aspect-square bg-white/5 border border-white/5 relative group overflow-hidden">
-                                   {img.url ? <img src={img.url} className="w-full h-full object-cover" /> : <ImageIcon className="w-4 h-4 absolute inset-0 m-auto text-white/5" />}
-                                   <input 
-                                     type="text" 
-                                     value={img.url}
-                                     onChange={(e) => {
-                                       const newImages = [...localConfig.sectionContent.gallery.images];
-                                       newImages[idx].url = e.target.value;
-                                       updateGlobalConfig({ ...localConfig, sectionContent: { ...localConfig.sectionContent, gallery: { ...localConfig.sectionContent.gallery, images: newImages } } });
-                                     }}
-                                     className="absolute bottom-0 left-0 w-full bg-black/80 p-1 text-[6px] text-white/40 outline-none translate-y-full group-hover:translate-y-0 transition-transform"
-                                     placeholder="URL"
-                                   />
-                                </div>
-                              ))}
-                           </div>
-                        </div>
-                      )}
-
-                      {/* Default placeholder for other sections */}
-                      {!['cat-destacadas', 'sobre-aurum', 'testimonios', 'experiencia-lujo', 'col-reciente', 'galeria'].includes(selectedSectionId) && (
-                         <div className="p-12 border-2 border-dashed border-white/5 flex flex-col items-center justify-center text-center">
-                            <ImageIcon className="w-8 h-8 text-white/5 mb-4" />
-                            <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">Más opciones de edición próximamente para esta sección específica.</p>
-                         </div>
-                      )}
-                    </div>
-                  </motion.section>
-                )}
-              </AnimatePresence>
             </div>
           )}
 
@@ -652,107 +223,43 @@ export function AdminContentPage() {
                   <div className="flex justify-between items-center">
                     <h3 className="text-white font-['Montserrat'] text-xs font-bold tracking-[0.2em] uppercase">Banners Activos</h3>
                   </div>
-                  <div className="space-y-4">
-                     {localConfig.banners.map((banner, idx) => (
-                       <div key={banner.id} className="bg-white/5 border border-white/5 p-6 space-y-6 group transition-all hover:border-brand-accent/20">
-                          <div className="grid md:grid-cols-12 gap-6 items-start">
-                             <div className="md:col-span-3 aspect-video bg-black/40 relative group/img overflow-hidden">
-                                {banner.image ? <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" /> : <ImageIcon className="w-6 h-6 absolute inset-0 m-auto text-white/5" />}
-                                <input 
-                                  type="text" 
-                                  placeholder="URL Imagen"
-                                  value={banner.image}
-                                  onChange={(e) => {
-                                    const newBanners = [...localConfig.banners];
-                                    newBanners[idx].image = e.target.value;
-                                    updateGlobalConfig({ ...localConfig, banners: newBanners });
-                                  }}
-                                  className="absolute bottom-0 left-0 w-full bg-black/80 p-2 text-[8px] text-white/60 focus:text-white outline-none translate-y-full group-hover/img:translate-y-0 transition-transform"
-                                />
-                             </div>
-                             <div className="md:col-span-9 grid md:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                  <label className="text-[8px] text-white/20 uppercase tracking-widest font-bold">Título</label>
-                                  <input 
-                                    type="text" 
-                                    value={banner.title} 
-                                    onChange={(e) => {
-                                      const newBanners = [...localConfig.banners];
-                                      newBanners[idx].title = e.target.value;
-                                      updateGlobalConfig({ ...localConfig, banners: newBanners });
-                                    }}
-                                    className="w-full bg-white/5 border border-white/10 p-2 text-[10px] text-white focus:border-brand-accent outline-none font-bold" 
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-[8px] text-white/20 uppercase tracking-widest font-bold">Subtítulo</label>
-                                  <input 
-                                    type="text" 
-                                    value={banner.subtitle || ''} 
-                                    onChange={(e) => {
-                                      const newBanners = [...localConfig.banners];
-                                      newBanners[idx].subtitle = e.target.value;
-                                      updateGlobalConfig({ ...localConfig, banners: newBanners });
-                                    }}
-                                    className="w-full bg-white/5 border border-white/10 p-2 text-[10px] text-white focus:border-brand-accent outline-none" 
-                                  />
-                                </div>
-                                <div className="space-y-1">
-                                  <label className="text-[8px] text-white/20 uppercase tracking-widest font-bold">Enlace (URL)</label>
-                                  <input 
-                                    type="text" 
-                                    value={banner.link} 
-                                    onChange={(e) => {
-                                      const newBanners = [...localConfig.banners];
-                                      newBanners[idx].link = e.target.value;
-                                      updateGlobalConfig({ ...localConfig, banners: newBanners });
-                                    }}
-                                    className="w-full bg-white/5 border border-white/10 p-2 text-[10px] text-white focus:border-brand-accent outline-none" 
-                                  />
-                                </div>
-                                <div className="flex items-center gap-4 pt-4">
-                                   <button 
-                                      onClick={() => {
-                                        const newBanners = [...localConfig.banners];
-                                        newBanners[idx].isActive = !newBanners[idx].isActive;
-                                        updateGlobalConfig({ ...localConfig, banners: newBanners });
-                                      }}
-                                      className={`flex items-center gap-2 text-[8px] uppercase tracking-widest font-bold transition-all ${banner.isActive ? 'text-emerald-400' : 'text-white/20'}`}
-                                    >
-                                      {banner.isActive ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                                      {banner.isActive ? 'Activo' : 'Inactivo'}
-                                   </button>
-                                   <button 
-                                     onClick={() => {
-                                       const newBanners = localConfig.banners.filter(b => b.id !== banner.id);
-                                       updateGlobalConfig({ ...localConfig, banners: newBanners });
-                                     }}
-                                     className="text-[8px] text-white/10 hover:text-red-400 uppercase tracking-widest font-bold transition-all ml-auto"
-                                   >
-                                     Eliminar
-                                   </button>
-                                </div>
-                             </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                     {localConfig.banners.map(banner => (
+                       <div key={banner.id} className="relative aspect-video bg-white/5 border border-white/10 group cursor-pointer overflow-hidden">
+                          <div className="absolute inset-0 flex items-center justify-center text-white/20 group-hover:text-brand-accent transition-all text-[10px] uppercase tracking-widest">
+                            {banner.image ? <img src={banner.image} alt={banner.title} className="w-full h-full object-cover" /> : "Sin Imagen"}
+                          </div>
+                          <div className="absolute top-4 right-4 flex gap-2">
+                             <button 
+                               onClick={() => {
+                                 const newBanners = localConfig.banners.filter(b => b.id !== banner.id);
+                                 updateGlobalConfig({ ...localConfig, banners: newBanners });
+                               }}
+                               className="p-2 bg-black/60 text-white/60 hover:text-red-400 backdrop-blur-md transition-all"
+                             >
+                               <Trash2 className="w-3 h-3" />
+                             </button>
+                          </div>
+                          <div className="absolute bottom-4 left-4">
+                             <p className="text-[10px] text-white uppercase tracking-widest bg-black/60 px-2 py-1 backdrop-blur-md">{banner.title}</p>
                           </div>
                        </div>
                      ))}
-                     <button 
+                     <div 
                        onClick={() => {
                          const newBanner = {
                            id: `banner-${Date.now()}`,
                            image: '',
-                           title: 'Nueva Colección',
-                           subtitle: 'Descubre más',
-                           link: '#',
-                           isActive: true
+                           title: 'Nuevo Banner',
+                           link: '#'
                          };
                          updateGlobalConfig({ ...localConfig, banners: [...localConfig.banners, newBanner] });
                        }}
-                       className="w-full py-8 border-2 border-dashed border-white/5 flex flex-col items-center justify-center text-center hover:border-brand-accent/20 transition-all group"
+                       className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 p-6 text-center hover:border-brand-accent/40 transition-all cursor-pointer"
                      >
-                        <Plus className="w-6 h-6 text-white/10 group-hover:text-brand-accent transition-colors mb-2" />
-                        <p className="text-[10px] text-white/20 group-hover:text-white/40 uppercase tracking-widest">Añadir Nuevo Banner Promocional</p>
-                     </button>
+                        <Plus className="w-6 h-6 text-white/10 mb-2" />
+                        <p className="text-[10px] text-white/20 uppercase tracking-widest">Añadir Banner</p>
+                     </div>
                   </div>
                 </section>
              </div>

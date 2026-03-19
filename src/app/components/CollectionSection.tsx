@@ -1,12 +1,28 @@
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './ImageWithFallback';
 
-import { useDb } from '../context/DbContext';
+const collections = [
+  {
+    id: 1,
+    title: "Diamantes de Autor",
+    description: "Exquisitas piezas de diamante que capturan la luz y la imaginación",
+    image: "https://images.unsplash.com/photo-1586878340506-af074f2ee999?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBqZXdlbHJ5JTIwY2xvc2UlMjB1cHxlbnwxfHx8fDE3NzM4NDkwNDF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+  },
+  {
+    id: 2,
+    title: "Herencia Dorada",
+    description: "Diseños de oro atemporales que celebran generaciones de artesanía",
+    image: "https://images.unsplash.com/photo-1758995115560-59c10d6cc28f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkJTIwbmVja2xhY2UlMjBqZXdlbHJ5JTIwZWxlZ2FudHxlbnwxfHx8fDE3NzM4NDkwNDF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+  },
+  {
+    id: 3,
+    title: "Perfección en Perlas",
+    description: "Perlas brillantes seleccionadas para una elegancia sofisticada",
+    image: "https://images.unsplash.com/photo-1767210338407-54b9264c326b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZWFybCUyMGVhcnJpbmdzJTIwbHV4dXJ5fGVufDF8fHx8MTc3Mzg0NzMyOXww&ixlib=rb-4.1.0&q=80&w=1080"
+  }
+];
 
 export function CollectionSection() {
-  const { siteConfig } = useDb();
-  const { title, subtitle, items } = siteConfig.sectionContent.collections;
-
   return (
     <section className="py-24 px-6 bg-[#FAFAFA]">
       <div className="max-w-7xl mx-auto">
@@ -19,17 +35,17 @@ export function CollectionSection() {
           transition={{ duration: 0.8 }}
         >
           <p className="font-['Montserrat'] text-brand-accent tracking-[0.3em] mb-4" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
-            {subtitle}
+            COLECCIONES DESTACADAS
           </p>
           <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-black mb-4" style={{ fontWeight: 300 }}>
-            {title}
+            Excelencia Seleccionada
           </h2>
           <div className="w-24 h-[1px] bg-brand-accent mx-auto"></div>
         </motion.div>
 
         {/* Cuadrícula de Colecciones */}
         <div className="grid md:grid-cols-3 gap-8">
-          {items.map((collection, index) => (
+          {collections.map((collection, index) => (
             <motion.div
               key={collection.id}
               className="group relative overflow-hidden bg-white cursor-pointer"

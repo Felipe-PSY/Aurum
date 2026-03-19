@@ -2,12 +2,26 @@ import { motion } from 'motion/react';
 import { Star, Quote } from 'lucide-react';
 import { ImageWithFallback } from './ImageWithFallback';
 
-import { useDb } from '../context/DbContext';
+const testimonials = [
+  {
+    id: 1,
+    name: "Isabella Fontaine",
+    title: "Coleccionista de Arte",
+    image: "https://images.unsplash.com/photo-1678723357379-d87f2a0ec8ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwd29tYW4lMjBwb3J0cmFpdCUyMGZhc2hpb258ZW58MXx8fHwxNzczNzk0NTY5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+    text: "La atención al detalle es impresionante. Cada pieza no es solo una joya, sino arte portátil que cuenta una historia. He formado toda mi colección aquí durante la última década.",
+    rating: 5
+  },
+  {
+    id: 2,
+    name: "Victoria Laurent",
+    title: "Diseñadora de Moda",
+    image: "https://images.unsplash.com/photo-1764179690227-af049306cd20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHdlYXJpbmclMjBlbGVnYW50JTIwamV3ZWxyeXxlbnwxfHx8fDE3NzM4MDY3MTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+    text: "Artesanía exquisita que rivaliza con las mejores casas europeas. Las piezas de diamante son particularmente impresionantes, con una claridad y brillantez excepcionales.",
+    rating: 5
+  }
+];
 
 export function TestimonialSection() {
-  const { siteConfig } = useDb();
-  const { title, subtitle, items: testimonials, stats } = siteConfig.sectionContent.testimonials;
-
   return (
     <section className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -20,10 +34,10 @@ export function TestimonialSection() {
           transition={{ duration: 0.8 }}
         >
           <p className="font-['Montserrat'] text-brand-accent tracking-[0.3em] mb-4" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
-            {subtitle}
+            TESTIMONIOS DE CLIENTES
           </p>
           <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-black mb-4" style={{ fontWeight: 300 }}>
-            {title}
+            Palabras de Nuestros Clientes
           </h2>
           <div className="w-24 h-[1px] bg-brand-accent mx-auto"></div>
         </motion.div>
@@ -105,7 +119,12 @@ export function TestimonialSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          {stats.map((stat, index) => (
+          {[
+            { number: "60+", label: "Años de Excelencia" },
+            { number: "15K+", label: "Clientes Satisfechos" },
+            { number: "98%", label: "Retención de Clientes" },
+            { number: "50+", label: "Maestros Artesanos" }
+          ].map((stat, index) => (
             <motion.div
               key={stat.label}
               className="text-center"

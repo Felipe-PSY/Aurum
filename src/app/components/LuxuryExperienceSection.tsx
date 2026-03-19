@@ -2,20 +2,30 @@ import { motion } from 'motion/react';
 import { Package, Shield, Sparkles, Clock } from 'lucide-react';
 import { ImageWithFallback } from './ImageWithFallback';
 
-import { useDb } from '../context/DbContext';
+const experiences = [
+  {
+    icon: Package,
+    title: "Embalaje Premium",
+    description: "Cada pieza llega en nuestra caja de terciopelo distintiva con relieve en oro de 24 quilates"
+  },
+  {
+    icon: Shield,
+    title: "Garantía de por Vida",
+    description: "Garantía integral que cubre la artesanía y la autenticidad"
+  },
+  {
+    icon: Sparkles,
+    title: "Limpieza de Cortesía",
+    description: "Limpieza e inspección profesional anual en nuestros talleres"
+  },
+  {
+    icon: Clock,
+    title: "Servicio de Guante Blanco",
+    description: "Consulta personal y entrega a domicilio para piezas seleccionadas"
+  }
+];
 
 export function LuxuryExperienceSection() {
-  const { siteConfig } = useDb();
-  const { title, subtitle, features } = siteConfig.sectionContent.luxuryExperience;
-
-  // Map features to use the appropriate icons (static for now)
-  const experiences = [
-    { icon: Package, title: features[0].title, description: features[0].description },
-    { icon: Shield, title: features[1].title, description: features[1].description },
-    { icon: Sparkles, title: features[2].title, description: features[2].description },
-    { icon: Clock, title: features[3].title, description: features[3].description }
-  ];
-
   return (
     <section className="py-24 px-6 bg-[#FAFAFA] relative overflow-hidden">
       {/* Elementos decorativos de fondo */}
@@ -32,10 +42,10 @@ export function LuxuryExperienceSection() {
           transition={{ duration: 0.8 }}
         >
           <p className="font-['Montserrat'] text-brand-accent tracking-[0.3em] mb-4" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
-            {subtitle}
+            LA EXPERIENCIA
           </p>
           <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-black mb-4" style={{ fontWeight: 300 }}>
-            {title}
+            Más allá de la Compra
           </h2>
           <div className="w-24 h-[1px] bg-brand-accent mx-auto mb-6"></div>
           <p className="font-['Montserrat'] text-gray-600 max-w-2xl mx-auto" style={{ fontWeight: 300 }}>
