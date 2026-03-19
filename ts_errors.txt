@@ -1,0 +1,13 @@
+﻿src/app/components/AdminLayout.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/app/pages/AdminConfigPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/app/pages/AdminCustomersPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/app/pages/AdminDashboard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/app/pages/AdminDashboard.tsx(20,3): error TS6133: 'BarChart' is declared but its value is never read.
+src/app/pages/AdminDashboard.tsx(21,3): error TS6133: 'Bar' is declared but its value is never read.
+src/app/pages/AdminDashboard.tsx(22,3): error TS6133: 'Cell' is declared but its value is never read.
+src/app/pages/AdminDashboard.tsx(46,9): error TS6133: 'recentOrders' is declared but its value is never read.
+src/app/pages/AdminDashboard.tsx(140,43): error TS6133: 'i' is declared but its value is never read.
+src/app/pages/AdminInventoryPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/app/pages/AdminInventoryPage.tsx(4,3): error TS6133: 'Package' is declared but its value is never read.
+src/app/pages/AdminOrdersPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/app/pages/AdminProductsPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.

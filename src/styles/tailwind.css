@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@import 'tw-animate-css';
+
+@theme {
+  --color-brand-primary: var(--color-primary);
+  --color-brand-secondary: var(--color-secondary);
+  --color-brand-accent: var(--color-accent);
+  --color-brand-text: var(--color-text);
+}
+
+:root {
+  --color-primary: #0A0A0A;
+  --color-secondary: #0F0F0F;
+  --color-accent: #D4AF37;
+  --color-text: #F5F5DC;
+}

@@ -1,0 +1,86 @@
+import { motion } from 'motion/react';
+import { ShoppingBag } from 'lucide-react';
+import { Link } from 'react-router';
+import { ImageWithFallback } from './ImageWithFallback';
+import { Product } from '../data/products';
+import { useCart } from '../context/CartContext';
+
+interface ProductCardProps {
+  product: Product;
+  index: number;
+}
+
+export function ProductCard({ product, index }: ProductCardProps) {
+  const { addToCart } = useCart();
+  const formattedPrice = new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0
+  }).format(product.price);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.8, delay: index * 0.1, ease: 'easeOut' }}
+      className="group"
+    >
+      {/* Contenedor de Imagen */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-[#1A1A1A] mb-6 shadow-2xl">
+        <Link to={`/product/${product.id}`} className="block w-full h-full">
+          <ImageWithFallback 
+            src={product.image} 
+            alt={product.name} 
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+          />
+          
+          {/* Capa de Brillo al Hoover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </Link>
+        
+        {/* Botón Añadir a la Bolsa */}
+        <div className="absolute inset-x-0 bottom-0 p-6 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-500 z-10">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              addToCart(product);
+            }}
+            className="w-full flex items-center justify-center gap-2 py-4 bg-brand-accent text-black font-['Montserrat'] text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all duration-300 font-bold shadow-2xl"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            Añadir a la Bolsa
+          </button>
+        </div>
+
+        {/* Marcadores de Nuevo/Destacado (Opcional) */}
+        {index < 2 && (
+          <div className="absolute top-4 left-4">
+            <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] tracking-[0.3em] uppercase">
+              Nuevo
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Info del Producto */}
+      <div className="space-y-2 text-center">
+        <Link to={`/product/${product.id}`} className="block group/title">
+          <h3 className="font-['Cormorant_Garamond'] text-2xl text-white group-hover/title:text-brand-accent transition-colors duration-300">
+            {product.name}
+          </h3>
+        </Link>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-brand-text/40 text-[10px] tracking-[0.2em] uppercase font-['Montserrat']">
+            {product.category}
+          </p>
+          <div className="w-8 h-[1px] bg-brand-accent/30" />
+          <p className="text-brand-accent font-['Montserrat'] text-sm tracking-widest font-medium">
+            {formattedPrice}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
