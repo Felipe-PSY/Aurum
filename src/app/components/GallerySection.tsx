@@ -1,46 +1,20 @@
 import { motion } from 'motion/react';
 import { ImageWithFallback } from './ImageWithFallback';
 
-const galleryImages = [
-  {
-    id: 1,
-    image: "https://images.unsplash.com/photo-1584628913500-7da703b091db?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3ZWRkaW5nJTIwcmluZ3MlMjBkaWFtb25kfGVufDF8fHx8MTc3Mzg0OTA0NXww&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Colección de Boda",
-    size: "large"
-  },
-  {
-    id: 2,
-    image: "https://images.unsplash.com/photo-1758995115560-59c10d6cc28f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkJTIwbmVja2xhY2UlMjBqZXdlbHJ5JTIwZWxlZ2FudHxlbnwxfHx8fDE3NzM4NDkwNDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Elegancia en Oro",
-    size: "medium"
-  },
-  {
-    id: 3,
-    image: "https://images.unsplash.com/photo-1764179690227-af049306cd20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHdlYXJpbmclMjBlbGVnYW50JTIwamV3ZWxyeXxlbnwxfHx8fDE3NzM4MDY3MTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Estilo Editorial",
-    size: "large"
-  },
-  {
-    id: 4,
-    image: "https://images.unsplash.com/photo-1767210338407-54b9264c326b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZWFybCUyMGVhcnJpbmdzJTIwbHV4dXJ5fGVufDF8fHx8MTc3Mzg0NzMyOXww&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Luminosidad de Perlas",
-    size: "medium"
-  },
-  {
-    id: 5,
-    image: "https://images.unsplash.com/photo-1763029513623-37d488cb97b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaWFtb25kJTIwYnJhY2VsZXQlMjBlbGVnYW50fGVufDF8fHx8MTc3Mzc2NDQ3MHww&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Brillantez de Diamante",
-    size: "medium"
-  },
-  {
-    id: 6,
-    image: "https://images.unsplash.com/photo-1736180857448-f166c7e00987?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnZW1zdG9uZSUyMGNsb3NlJTIwdXB8ZW58MXx8fHwxNzczODQ5MDQ0fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Gemas Preciosas",
-    size: "small"
-  }
-];
+import { useDb } from '../context/DbContext';
 
 export function GallerySection() {
+  const { siteConfig } = useDb();
+  const { title, subtitle, images: galleryItems } = siteConfig.sectionContent.gallery;
+
+  // Map to the structure used by the component
+  const galleryImages = galleryItems.map(item => ({
+    id: item.id,
+    image: item.url,
+    title: item.alt || "Galería Aurum",
+    size: item.id % 3 === 0 ? 'large' : item.id % 2 === 0 ? 'medium' : 'small'
+  }));
+
   return (
     <section className="py-24 px-6 bg-black">
       <div className="max-w-7xl mx-auto">
@@ -53,10 +27,10 @@ export function GallerySection() {
           transition={{ duration: 0.8 }}
         >
           <p className="font-['Montserrat'] text-brand-accent tracking-[0.3em] mb-4" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
-            GALERÍA VISUAL
+            {subtitle}
           </p>
           <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-white mb-4" style={{ fontWeight: 300 }}>
-            Momentos de Brillantez
+            {title}
           </h2>
           <div className="w-24 h-[1px] bg-brand-accent mx-auto"></div>
         </motion.div>

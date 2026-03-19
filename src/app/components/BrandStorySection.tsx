@@ -2,25 +2,32 @@ import { motion } from 'motion/react';
 import { Award, Heart, Gem } from 'lucide-react';
 import { ImageWithFallback } from './ImageWithFallback';
 
-const values = [
-  {
-    icon: Award,
-    title: "Herencia",
-    description: "Más de seis décadas de magistral creación de joyería transmitidas a través de generaciones"
-  },
-  {
-    icon: Gem,
-    title: "Artesanía",
-    description: "Cada pieza meticulosamente elaborada a mano por nuestros maestros artesanos"
-  },
-  {
-    icon: Heart,
-    title: "Exclusividad",
-    description: "Ediciones limitadas diseñadas para quienes aprecian lo extraordinario"
-  }
-];
+import { useDb } from '../context/DbContext';
 
 export function BrandStorySection() {
+  const { siteConfig } = useDb();
+  const { title, subtitle, p1, p2 } = siteConfig.sectionContent.brandStory;
+
+  // We keep the values array for the icons/sub-items if they were to be dynamic, 
+  // but for now we follow the user's defined structure in siteConfig
+  const values = [
+    {
+      icon: Award,
+      title: "Herencia",
+      description: "Más de seis décadas de magistral creación de joyería transmitidas a través de generaciones"
+    },
+    {
+      icon: Gem,
+      title: "Artesanía",
+      description: "Cada pieza meticulosamente elaborada a mano por nuestros maestros artesanos"
+    },
+    {
+      icon: Heart,
+      title: "Exclusividad",
+      description: "Ediciones limitadas diseñadas para quienes aprecian lo extraordinario"
+    }
+  ];
+
   return (
     <section className="py-24 px-6 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -66,19 +73,19 @@ export function BrandStorySection() {
             transition={{ duration: 1 }}
           >
             <p className="font-['Montserrat'] text-brand-accent tracking-[0.3em] mb-4" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
-              NUESTRA HISTORIA
+              {subtitle}
             </p>
             <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-black mb-6" style={{ fontWeight: 300 }}>
-              Un Legado de Brillantez
+              {title}
             </h2>
             <div className="w-16 h-[1px] bg-brand-accent mb-8"></div>
             
             <div className="space-y-6 mb-12">
               <p className="font-['Montserrat'] text-gray-700 leading-relaxed" style={{ fontWeight: 300 }}>
-                Desde 1962, hemos estado creando joyas que trascienden el tiempo. Cada pieza cuenta una historia de pasión, precisión y un arte inigualable, fusionando técnicas tradicionales con una visión contemporánea.
+                {p1}
               </p>
               <p className="font-['Montserrat'] text-gray-700 leading-relaxed" style={{ fontWeight: 300 }}>
-                Nuestro taller en el corazón de París sigue siendo un santuario donde maestros joyeros transforman metales preciosos y piedras preciosas en arte portátil, destinado a convertirse en reliquias familiares.
+                {p2}
               </p>
             </div>
 

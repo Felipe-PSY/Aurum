@@ -5,6 +5,7 @@ import { ProductSection } from '../components/ProductSection';
 import { LuxuryExperienceSection } from '../components/LuxuryExperienceSection';
 import { TestimonialSection } from '../components/TestimonialSection';
 import { GallerySection } from '../components/GallerySection';
+import { PromoBanner } from '../components/PromoBanner';
 import { useDb } from '../context/DbContext';
 
 const sectionComponents: Record<string, React.FC> = {
@@ -14,6 +15,7 @@ const sectionComponents: Record<string, React.FC> = {
   LuxuryExperienceSection,
   TestimonialSection,
   GallerySection,
+  PromoBanner,
 };
 
 export function HomePage() {

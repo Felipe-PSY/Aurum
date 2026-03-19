@@ -20,7 +20,9 @@ export interface Banner {
   id: string;
   image: string;
   title: string;
+  subtitle?: string;
   link: string;
+  isActive: boolean;
 }
 
 export interface FooterLink {
@@ -31,6 +33,61 @@ export interface FooterLink {
 export interface FooterSection {
   title: string;
   links: FooterLink[];
+}
+
+export interface SectionContent {
+  collections: {
+    title: string;
+    subtitle: string;
+    items: { id: number; title: string; description: string; image: string; }[];
+  };
+  brandStory: {
+    title: string;
+    subtitle: string;
+    p1: string;
+    p2: string;
+    image: string;
+    values: { title: string; description: string; iconName: string; }[];
+  };
+  luxuryExperience: {
+    title: string;
+    subtitle: string;
+    features: { title: string; description: string; iconName: string; }[];
+  };
+  testimonials: {
+    title: string;
+    subtitle: string;
+    items: { id: number; name: string; title: string; text: string; rating: number; image: string; }[];
+    stats: { number: string; label: string; }[];
+  };
+  productSection: {
+    title: string;
+    subtitle: string;
+  };
+  gallery: {
+    title: string;
+    subtitle: string;
+    images: { id: number; url: string; alt: string; }[];
+  };
+}
+
+interface SiteConfig {
+  address: string;
+  whatsappNumber: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
+  contactEmail: string;
+  instagram: string;
+  businessHours?: string;
+  hero: HeroConfig;
+  homeSections: HomeSection[];
+  banners: Banner[];
+  footerDescription: string;
+  footerSections: FooterSection[];
+  sectionContent: SectionContent;
 }
 
 interface Category {
@@ -53,24 +110,6 @@ interface Order {
   };
   metodoPago: string;
   status: 'Nuevo' | 'Pendiente' | 'En proceso' | 'Pagado' | 'Enviado' | 'Entregado' | 'Cancelado';
-}
-
-interface SiteConfig {
-  address: string;
-  whatsappNumber: string;
-  colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-  };
-  contactEmail: string;
-  instagram: string;
-  businessHours?: string;
-  hero: HeroConfig;
-  homeSections: HomeSection[];
-  banners: Banner[];
-  footerDescription: string;
-  footerSections: FooterSection[];
 }
 
 export interface ActivityLog {
@@ -126,7 +165,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       { id: 'galeria', name: 'Galería', component: 'GallerySection', isVisible: true, order: 5 }
     ],
     banners: [
-      { id: 'banner-1', image: '', title: 'Colección Mujer', link: '#' }
+      { id: 'banner-1', image: '', title: 'Colección Mujer', subtitle: 'Descubre la elegancia eterna', link: '#', isActive: true }
     ],
     footerDescription: 'Creando obras maestras de joyería atemporales desde 1962. Cada pieza es una celebración de la herencia, el arte y los momentos que más importan.',
     footerSections: [
@@ -160,7 +199,99 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           { name: "Carreras", href: "#" }
         ]
       }
-    ]
+    ],
+    sectionContent: {
+      collections: {
+        title: 'Excelencia Seleccionada',
+        subtitle: 'COLECCIONES DESTACADAS',
+        items: [
+          {
+            id: 1,
+            title: "Diamantes de Autor",
+            description: "Exquisitas piezas de diamante que capturan la luz y la imaginación",
+            image: "https://images.unsplash.com/photo-1586878340506-af074f2ee999?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjBqZXdlbHJ5JTIwY2xvc2UlMjB1cHxlbnwxfHx8fDE3NzM4NDkwNDF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+          },
+          {
+            id: 2,
+            title: "Herencia Dorada",
+            description: "Diseños de oro atemporales que celebran generaciones de artesanía",
+            image: "https://images.unsplash.com/photo-1758995115560-59c10d6cc28f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkJTIwbmVja2xhY2UlMjBqZXdlbHJ5JTIwZWxlZ2FudHxlbnwxfHx8fDE3NzM4NDkwNDF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+          },
+          {
+            id: 3,
+            title: "Perfección en Perlas",
+            description: "Perlas brillantes seleccionadas para una elegancia sofisticada",
+            image: "https://images.unsplash.com/photo-1767210338407-54b9264c326b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZWFybCUyMGVhcnJpbmdzJTIwbHV4dXJ5fGVufDF8fHx8MTc3Mzg0NzMyOXww&ixlib=rb-4.1.0&q=80&w=1080"
+          }
+        ]
+      },
+      brandStory: {
+        title: 'Un Legado de Brillantez',
+        subtitle: 'NUESTRA HISTORIA',
+        p1: 'Desde 1962, hemos estado creando joyas que trascienden el tiempo. Cada pieza cuenta una historia de pasión, precisión y un arte inigualable, fusionando técnicas tradicionales con una visión contemporánea.',
+        p2: 'Nuestro taller en el corazón de París sigue siendo un santuario donde maestros joyeros transforman metales preciosos y piedras preciosas en arte portátil, destinado a convertirse en reliquias familiares.',
+        image: 'https://images.unsplash.com/photo-1619605401830-5430fea8d41b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXdlbHJ5JTIwY3JhZnRzbWFuc2hpcCUyMGhhbmRzfGVufDF8fHx8MTc3Mzg0OTA0M3ww&ixlib=rb-4.1.0&q=80&w=1080',
+        values: [
+          { iconName: 'Award', title: "Herencia", description: "Más de seis décadas de magistral creación de joyería transmitidas a través de generaciones" },
+          { iconName: 'Gem', title: "Artesanía", description: "Cada pieza meticulosamente elaborada a mano por nuestros maestros artesanos" },
+          { iconName: 'Heart', title: "Exclusividad", description: "Ediciones limitadas diseñadas para quienes aprecian lo extraordinario" }
+        ]
+      },
+      luxuryExperience: {
+        title: 'El Viaje Aurum',
+        subtitle: 'EXPERIENCIA DE LUJO',
+        features: [
+          { iconName: 'MapPin', title: "Envío Global Asegurado", description: "Entrega puerta a puerta con seguimiento en tiempo real y seguro total para su tranquilidad." },
+          { iconName: 'Clock', title: "Conserje 24/7", description: "Asesoramiento personalizado disponible en cualquier momento para ayudarle a elegir la pieza perfecta." },
+          { iconName: 'ShieldCheck', title: "Autenticidad Certificada", description: "Cada pieza se entrega con un certificado detallado de autenticidad y los más altos estándares de calidad." },
+          { iconName: 'Gift', title: "Presentación Signature", description: "Un desempaquetado inolvidable con nuestro elegante estuche de cortesía y envoltorio de lujo." }
+        ]
+      },
+      testimonials: {
+        title: 'Palabras de Nuestros Clientes',
+        subtitle: 'TESTIMONIOS DE CLIENTES',
+        items: [
+          {
+            id: 1,
+            name: "Isabella Fontaine",
+            title: "Coleccionista de Arte",
+            image: "https://images.unsplash.com/photo-1678723357379-d87f2a0ec8ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwd29tYW4lMjBwb3J0cmFpdCUyMGZhc2hpb258ZW58MXx8fHwxNzczNzk0NTY5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+            text: "La atención al detalle es impresionante. Cada pieza no es solo una joya, sino arte portátil que cuenta una historia. He formado toda mi colección aquí durante la última década.",
+            rating: 5
+          },
+          {
+            id: 2,
+            name: "Victoria Laurent",
+            title: "Diseñadora de Moda",
+            image: "https://images.unsplash.com/photo-1764179690227-af049306cd20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHdlYXJpbmclMjBlbGVnYW50JTIwamV3ZWxyeXxlbnwxfHx8fDE3NzM4MDY3MTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+            text: "Artesanía exquisita que rivaliza con las mejores casas europeas. Las piezas de diamante son particularmente impresionantes, con una claridad y brillantez excepcionales.",
+            rating: 5
+          }
+        ],
+        stats: [
+          { number: "60+", label: "Años de Excelencia" },
+          { number: "15K+", label: "Clientes Satisfechos" },
+          { number: "98%", label: "Retención de Clientes" },
+          { number: "50+", label: "Maestros Artesanos" }
+        ]
+      },
+      productSection: {
+        title: 'Obras Maestras le Esperan',
+        subtitle: 'PIEZAS DISTINTIVAS'
+      },
+      gallery: {
+        title: 'Esplendor Visual',
+        subtitle: 'GALERÍA DE INSTAGRAM',
+        images: [
+          { id: 1, url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=400', alt: 'Joyería 1' },
+          { id: 2, url: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?q=80&w=400', alt: 'Joyería 2' },
+          { id: 3, url: 'https://images.unsplash.com/photo-1573408302185-9114f33a65af?q=80&w=400', alt: 'Joyería 3' },
+          { id: 4, url: 'https://images.unsplash.com/photo-1599459183200-59c2667a0127?q=80&w=400', alt: 'Joyería 4' },
+          { id: 5, url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=400', alt: 'Joyería 5' },
+          { id: 6, url: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?q=80&w=400', alt: 'Joyería 6' }
+        ]
+      }
+    }
   });
 
   useEffect(() => {
