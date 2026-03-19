@@ -265,6 +265,37 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     if (savedLogs) setActivityLogs(JSON.parse(savedLogs));
   }, []);
 
+  // REAL-TIME SYNC: Listen for storage changes from other tabs/windows
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      try {
+        if (!e.newValue) return;
+        
+        if (e.key === 'aurum_orders') {
+          const newOrders = JSON.parse(e.newValue);
+          setOrders(newOrders);
+        } else if (e.key === 'aurum_products') {
+          const newProducts = JSON.parse(e.newValue);
+          setProducts(newProducts);
+        } else if (e.key === 'aurum_logs') {
+          const newLogs = JSON.parse(e.newValue);
+          setActivityLogs(newLogs);
+        } else if (e.key === 'aurum_config') {
+          const newConfig = JSON.parse(e.newValue);
+          setSiteConfig(newConfig);
+        } else if (e.key === 'aurum_categories') {
+          const newCats = JSON.parse(e.newValue);
+          setCategories(newCats);
+        }
+      } catch (err) {
+        console.error("Error syncing storage across tabs:", err);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   useEffect(() => {
     if (products.length > 0) localStorage.setItem('aurum_products', JSON.stringify(products));
     if (categories.length > 0) localStorage.setItem('aurum_categories', JSON.stringify(categories));
@@ -292,6 +323,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       status: 'Nuevo'
     };
     setOrders([newOrder, ...orders]);
+    addLog('order', `Nuevo pedido #${newOrder.id.slice(-6).toUpperCase()} recibido`, 'Sistema');
   };
 
   const updateOrderStatus = (id: string, status: Order['status']) => {
