@@ -199,6 +199,27 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       if (config.colors && config.colors.accent === 'var(--color-accent)') {
         config.colors.accent = '#D4AF37';
       }
+      
+      // Restore default sections if they were accidentally emptied
+      const defaultSections = [
+        { id: 'cat-destacadas', name: 'Categorías Destacadas', component: 'CollectionSection', isVisible: true, order: 0 },
+        { id: 'sobre-aurum', name: 'Sobre Aurum', component: 'BrandStorySection', isVisible: true, order: 1 },
+        { id: 'col-reciente', name: 'Colección Reciente', component: 'ProductSection', isVisible: true, order: 2 },
+        { id: 'experiencia-lujo', name: 'Experiencia de Lujo', component: 'LuxuryExperienceSection', isVisible: true, order: 3 },
+        { id: 'testimonios', name: 'Testimonios', component: 'TestimonialSection', isVisible: true, order: 4 },
+        { id: 'galeria', name: 'Galería', component: 'GallerySection', isVisible: true, order: 5 }
+      ];
+
+      if (!config.homeSections || config.homeSections.length === 0) {
+        config.homeSections = defaultSections;
+      }
+
+      if (!config.banners || config.banners.length === 0) {
+        config.banners = [
+          { id: 'banner-1', image: '', title: 'Colección Mujer', link: '#' }
+        ];
+      }
+      
       setSiteConfig(config);
     }
     if (savedLogs) setActivityLogs(JSON.parse(savedLogs));
