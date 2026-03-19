@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Plus, Minus } from 'lucide-react';
 import { Link } from 'react-router';
 import { ImageWithFallback } from './ImageWithFallback';
 import { Product } from '../data/products';
@@ -11,7 +11,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, index }: ProductCardProps) {
-  const { addToCart } = useCart();
+  const { cart, addToCart, updateQuantity } = useCart();
+  const cartItem = cart.find(item => item.id === product.id);
   const formattedPrice = new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
@@ -39,29 +40,66 @@ export function ProductCard({ product, index }: ProductCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </Link>
         
-        {/* Botón Añadir a la Bolsa */}
+        {/* Botón Añadir a la Bolsa / Controles de Cantidad */}
         <div className="absolute inset-x-0 bottom-0 p-6 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-500 z-10">
-          <button 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              addToCart(product);
-            }}
-            className="w-full flex items-center justify-center gap-2 py-4 bg-brand-accent text-black font-['Montserrat'] text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all duration-300 font-bold shadow-2xl"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            Añadir a la Bolsa
-          </button>
+          {!cartItem ? (
+            <button 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                addToCart(product);
+              }}
+              className="w-full flex items-center justify-center gap-2 py-4 bg-brand-accent text-black font-['Montserrat'] text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all duration-300 font-bold shadow-2xl"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Añadir a la Bolsa
+            </button>
+          ) : (
+            <div className="flex items-center bg-black/60 backdrop-blur-md border border-white/10 overflow-hidden shadow-2xl">
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  updateQuantity(product.id, -1);
+                }}
+                className="flex-1 py-4 flex items-center justify-center hover:bg-brand-accent hover:text-black transition-colors text-white border-r border-white/10"
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+              <div className="px-6 py-4 text-white font-bold font-['Montserrat'] text-xs min-w-[3rem] text-center">
+                {cartItem.quantity}
+              </div>
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  updateQuantity(product.id, 1);
+                }}
+                className="flex-1 py-4 flex items-center justify-center hover:bg-brand-accent hover:text-black transition-colors text-white border-l border-white/10"
+              >
+                <Plus className="w-3 h-3" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Marcadores de Nuevo/Destacado (Opcional) */}
-        {index < 2 && (
-          <div className="absolute top-4 left-4">
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          {index < 2 && (
             <span className="px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[8px] tracking-[0.3em] uppercase">
               Nuevo
             </span>
-          </div>
-        )}
+          )}
+          {cartItem && (
+            <motion.div 
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="w-6 h-6 bg-brand-accent flex items-center justify-center rounded-full shadow-lg border border-black/20"
+            >
+              <span className="text-[10px] font-bold text-black font-['Montserrat']">{cartItem.quantity}</span>
+            </motion.div>
+          )}
+        </div>
       </div>
 
       {/* Info del Producto */}

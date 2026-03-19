@@ -1,115 +1,117 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, MessageSquarePlus } from 'lucide-react';
 import { ImageWithFallback } from './ImageWithFallback';
-
-const testimonials = [
-  {
-    id: 1,
-    name: "Isabella Fontaine",
-    title: "Coleccionista de Arte",
-    image: "https://images.unsplash.com/photo-1678723357379-d87f2a0ec8ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbGVnYW50JTIwd29tYW4lMjBwb3J0cmFpdCUyMGZhc2hpb258ZW58MXx8fHwxNzczNzk0NTY5fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    text: "La atención al detalle es impresionante. Cada pieza no es solo una joya, sino arte portátil que cuenta una historia. He formado toda mi colección aquí durante la última década.",
-    rating: 5
-  },
-  {
-    id: 2,
-    name: "Victoria Laurent",
-    title: "Diseñadora de Moda",
-    image: "https://images.unsplash.com/photo-1764179690227-af049306cd20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHdlYXJpbmclMjBlbGVnYW50JTIwamV3ZWxyeXxlbnwxfHx8fDE3NzM4MDY3MTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    text: "Artesanía exquisita que rivaliza con las mejores casas europeas. Las piezas de diamante son particularmente impresionantes, con una claridad y brillantez excepcionales.",
-    rating: 5
-  }
-];
+import { useDb } from '../context/DbContext';
+import { TestimonialForm } from './TestimonialForm';
 
 export function TestimonialSection() {
+  const { testimonials } = useDb();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  
+  // Show only visible testimonials
+  const visibleTestimonials = testimonials.filter(t => t.isVisible !== false);
+
   return (
-    <section className="py-24 px-6 bg-white">
+    <section className="py-24 px-6 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Encabezado */}
-        <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8 }}
-        >
-          <p className="font-['Montserrat'] text-brand-accent tracking-[0.3em] mb-4" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
-            TESTIMONIOS DE CLIENTES
-          </p>
-          <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-black mb-4" style={{ fontWeight: 300 }}>
-            Palabras de Nuestros Clientes
-          </h2>
-          <div className="w-24 h-[1px] bg-brand-accent mx-auto"></div>
-        </motion.div>
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-8 mb-20">
+          <motion.div
+            className="text-center md:text-left"
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <p className="font-['Montserrat'] text-brand-accent tracking-[0.3em] mb-4" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
+              TESTIMONIOS DE CLIENTES
+            </p>
+            <h2 className="font-['Cormorant_Garamond'] text-4xl md:text-5xl text-black mb-4" style={{ fontWeight: 300 }}>
+              Palabras de Nuestros Clientes
+            </h2>
+            <div className="w-24 h-[1px] bg-brand-accent md:mx-0 mx-auto"></div>
+          </motion.div>
+
+          <motion.button
+            onClick={() => setIsFormOpen(true)}
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-3 px-8 py-4 bg-black text-white text-[10px] tracking-[0.3em] uppercase font-bold hover:bg-brand-accent hover:text-black transition-all duration-500 shadow-xl"
+          >
+            <MessageSquarePlus className="w-4 h-4" />
+            Compartir Mi Experiencia
+          </motion.button>
+        </div>
 
         {/* Cuadrícula de Testimonios */}
         <div className="grid md:grid-cols-2 gap-12">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={testimonial.id}
-              className="group relative"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.8, delay: index * 0.2 }}
-            >
-              <div className="relative bg-[#FAFAFA] p-10 hover:shadow-2xl hover:shadow-black/5 transition-all duration-500">
-                {/* Icono de Cita */}
-                <div className="absolute -top-4 left-10 w-12 h-12 bg-brand-accent flex items-center justify-center">
-                  <Quote className="w-6 h-6 text-white" />
-                </div>
-
-                {/* Estrellas */}
-                <div className="flex gap-1 mb-6 mt-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-brand-accent text-brand-accent" />
-                  ))}
-                </div>
-
-                {/* Texto del Testimonio */}
-                <p className="font-['Montserrat'] text-gray-700 leading-relaxed mb-8 text-base" style={{ fontWeight: 300, fontStyle: 'italic' }}>
-                  "{testimonial.text}"
-                </p>
-
-                {/* Información del Cliente */}
-                <div className="flex items-center gap-4">
-                  <div className="relative w-16 h-16 overflow-hidden rounded-full">
-                    <ImageWithFallback
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 ring-2 ring-brand-accent/20"></div>
-                  </div>
-                  <div>
-                    <h4 className="font-['Cormorant_Garamond'] text-xl text-black" style={{ fontWeight: 500 }}>
-                      {testimonial.name}
-                    </h4>
-                    <p className="font-['Montserrat'] text-gray-500 text-sm" style={{ fontWeight: 300 }}>
-                      {testimonial.title}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Línea decorativa */}
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand-accent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </div>
-
-              {/* Efecto de resplandor */}
+          {visibleTestimonials.length === 0 ? (
+            <div className="md:col-span-2 py-20 text-center border border-dashed border-gray-200">
+              <p className="font-['Cormorant_Garamond'] text-2xl text-gray-400 italic">No hay testimonios visibles en este momento.</p>
+            </div>
+          ) : (
+            visibleTestimonials.map((testimonial, index) => (
               <motion.div
-                className="absolute -inset-4 bg-gradient-to-r from-brand-accent/0 via-brand-accent/5 to-brand-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 -z-10 blur-xl"
-                animate={{
-                  scale: [1, 1.05, 1]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              ></motion.div>
-            </motion.div>
-          ))}
+                key={testimonial.id}
+                className="group relative"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: index * 0.2 }}
+              >
+                <div className="relative bg-[#FAFAFA] p-10 hover:shadow-2xl hover:shadow-black/5 transition-all duration-500 h-full flex flex-col">
+                  {/* Icono de Cita */}
+                  <div className="absolute -top-4 left-10 w-12 h-12 bg-brand-accent flex items-center justify-center">
+                    <Quote className="w-6 h-6 text-white" />
+                  </div>
+
+                  {/* Estrellas */}
+                  <div className="flex gap-1 mb-6 mt-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-brand-accent text-brand-accent" />
+                    ))}
+                  </div>
+
+                  {/* Texto del Testimonio */}
+                  <p className="font-['Montserrat'] text-gray-700 leading-relaxed mb-8 text-base flex-1" style={{ fontWeight: 300, fontStyle: 'italic' }}>
+                    "{testimonial.text}"
+                  </p>
+
+                  {/* Información del Cliente */}
+                  <div className="flex items-center gap-4">
+                    <div className="relative w-16 h-16 overflow-hidden rounded-full bg-brand-accent/10 flex items-center justify-center font-['Cormorant_Garamond'] text-2xl italic text-brand-accent border border-brand-accent/20">
+                      {'image' in testimonial && testimonial.image ? (
+                        <ImageWithFallback
+                          src={testimonial.image as string}
+                          alt={testimonial.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>{testimonial.name.charAt(0)}</span>
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-['Cormorant_Garamond'] text-xl text-black" style={{ fontWeight: 500 }}>
+                        {testimonial.name}
+                      </h4>
+                      <p className="font-['Montserrat'] text-gray-500 text-sm" style={{ fontWeight: 300 }}>
+                        {testimonial.title}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Línea decorativa */}
+                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand-accent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </div>
+              </motion.div>
+            ))
+          )}
         </div>
+
+        <TestimonialForm isOpen={isFormOpen} onClose={() => setIsFormOpen(false)} />
 
         {/* Estadísticas Adicionales */}
         <motion.div

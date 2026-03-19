@@ -6,7 +6,8 @@ import {
   Order, 
   SiteConfig, 
   ActivityLog, 
-  DbContextType 
+  DbContextType,
+  Testimonial
 } from '../types';
 
 const DbContext = createContext<DbContextType | undefined>(undefined);
@@ -16,6 +17,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({
     address: 'Calle 123 #45-67, Bogotá',
@@ -85,6 +87,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         const savedOrders = localStorage.getItem('aurum_orders');
         const savedConfig = localStorage.getItem('aurum_config');
         const savedLogs = localStorage.getItem('aurum_logs');
+        const savedTestimonials = localStorage.getItem('aurum_testimonials');
 
         if (savedProducts) setProducts(JSON.parse(savedProducts));
         else setProducts(initialProducts.map(p => ({
@@ -110,6 +113,30 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         if (savedOrders) setOrders(JSON.parse(savedOrders));
         if (savedConfig) setSiteConfig(JSON.parse(savedConfig));
         if (savedLogs) setActivityLogs(JSON.parse(savedLogs));
+        if (savedTestimonials) setTestimonials(JSON.parse(savedTestimonials));
+        else {
+          // Initial mock testimonials
+          setTestimonials([
+            {
+              id: 't-1',
+              name: "Isabella Fontaine",
+              title: "Coleccionista de Arte",
+              text: "La atención al detalle es impresionante. Cada pieza no es solo una joya, sino arte portátil que cuenta una historia.",
+              rating: 5,
+              date: new Date().toISOString(),
+              isVisible: true
+            },
+            {
+              id: 't-2',
+              name: "Victoria Laurent",
+              title: "Diseñadora de Moda",
+              text: "Artesanía exquisita que rivaliza con las mejores casas europeas. Las piezas de diamante son particularmente impresionantes.",
+              rating: 5,
+              date: new Date().toISOString(),
+              isVisible: true
+            }
+          ]);
+        }
       } catch (err) {
         console.error("Error loading data from localStorage:", err);
       } finally {
@@ -133,6 +160,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           case 'aurum_logs': setActivityLogs(data); break;
           case 'aurum_config': setSiteConfig(data); break;
           case 'aurum_categories': setCategories(data); break;
+          case 'aurum_testimonials': setTestimonials(data); break;
         }
       } catch (err) {
         console.error("Error syncing storage across tabs:", err);
@@ -152,7 +180,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     localStorage.setItem('aurum_orders', JSON.stringify(orders));
     localStorage.setItem('aurum_config', JSON.stringify(siteConfig));
     localStorage.setItem('aurum_logs', JSON.stringify(activityLogs));
-  }, [products, categories, orders, siteConfig, activityLogs, isInitialized]);
+    localStorage.setItem('aurum_testimonials', JSON.stringify(testimonials));
+  }, [products, categories, orders, siteConfig, activityLogs, testimonials, isInitialized]);
 
   // Sync colors to CSS variables
   useEffect(() => {
@@ -222,13 +251,31 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     };
     setActivityLogs(prev => [newLog, ...prev].slice(0, 100));
   };
+  
+  const addTestimonial = (t: Omit<Testimonial, 'id' | 'date' | 'isVisible'>) => {
+    const newTestimonial: Testimonial = {
+      ...t,
+      id: `test-${Date.now()}`,
+      date: new Date().toISOString(),
+      isVisible: true
+    };
+    setTestimonials(prev => [newTestimonial, ...prev]);
+  };
+
+  const updateTestimonial = (id: string, updates: Partial<Testimonial>) => {
+    setTestimonials(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
+  const deleteTestimonial = (id: string) => {
+    setTestimonials(prev => prev.filter(t => t.id !== id));
+  };
 
   return (
     <DbContext.Provider value={{ 
-      products, categories, orders, siteConfig, activityLogs,
+      products, categories, orders, siteConfig, activityLogs, testimonials,
       addProduct, updateProduct, deleteProduct, 
       addOrder, updateOrderStatus, updateSiteConfig, updateCategories,
-      addLog 
+      addLog, addTestimonial, updateTestimonial, deleteTestimonial 
     }}>
       {children}
     </DbContext.Provider>

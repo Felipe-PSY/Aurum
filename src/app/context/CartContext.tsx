@@ -44,13 +44,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateQuantity = (productId: number, delta: number) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
+    setCart(prevCart => {
+      const updatedCart = prevCart.map(item =>
         item.id === productId
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
+          ? { ...item, quantity: item.quantity + delta }
           : item
-      )
-    );
+      );
+      return updatedCart.filter(item => item.quantity > 0);
+    });
   };
 
   const clearCart = () => {

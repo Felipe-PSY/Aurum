@@ -11,7 +11,6 @@ import {
   Users, 
   Database, 
   Image as ImageIcon, 
-  BarChart3, 
   Settings, 
   LogOut,
   ChevronRight,
@@ -20,7 +19,8 @@ import {
   Bell,
   Search,
   Sun,
-  Moon
+  Moon,
+  MessageSquare
 } from 'lucide-react';
 
 export function AdminLayout() {
@@ -67,7 +67,7 @@ export function AdminLayout() {
     { name: 'Clientes', icon: Users, path: '/admin/clientes' },
     { name: 'Inventario', icon: Database, path: '/admin/inventario' },
     { name: 'Banners / Contenido', icon: ImageIcon, path: '/admin/contenido' },
-    { name: 'Reportes', icon: BarChart3, path: '/admin/reportes' },
+    { name: 'Testimonios', icon: MessageSquare, path: '/admin/testimonios' },
     { name: 'Configuración', icon: Settings, path: '/admin/configuracion' },
   ];
 

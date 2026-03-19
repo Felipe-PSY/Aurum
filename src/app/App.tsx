@@ -19,6 +19,7 @@ import { AdminCustomersPage } from './pages/AdminCustomersPage';
 import { AdminInventoryPage } from './pages/AdminInventoryPage';
 import { AdminConfigPage } from './pages/AdminConfigPage';
 import { AdminContentPage } from './pages/AdminContentPage';
+import { AdminTestimonialsPage } from '@/app/pages/AdminTestimonialsPage';
 
 // Component to protect admin routes
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -60,7 +61,7 @@ export default function App() {
                   <Route path="clientes" element={<AdminCustomersPage />} />
                   <Route path="inventario" element={<AdminInventoryPage />} />
                   <Route path="contenido" element={<AdminContentPage />} />
-                  <Route path="reportes" element={<div>Reportes Placeholder</div>} />
+                  <Route path="testimonios" element={<AdminTestimonialsPage />} />
                   <Route path="configuracion" element={<AdminConfigPage />} />
                 </Route>
               </Routes>

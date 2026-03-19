@@ -1,5 +1,15 @@
 import { Product as BaseProduct } from './data/products';
 
+export interface Testimonial {
+  id: string;
+  name: string;
+  title?: string;
+  text: string;
+  rating: number;
+  date: string;
+  isVisible: boolean;
+}
+
 export type Product = BaseProduct;
 
 export interface HeroConfig {
@@ -98,6 +108,7 @@ export interface DbContextType {
   orders: Order[];
   siteConfig: SiteConfig;
   activityLogs: ActivityLog[];
+  testimonials: Testimonial[];
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
   deleteProduct: (id: number) => void;
@@ -106,4 +117,7 @@ export interface DbContextType {
   updateSiteConfig: (config: SiteConfig) => void;
   updateCategories: (categories: Category[]) => void;
   addLog: (type: ActivityLog['type'], message: string, userName: string) => void;
+  addTestimonial: (testimonial: Omit<Testimonial, 'id' | 'date' | 'isVisible'>) => void;
+  updateTestimonial: (id: string, updates: Partial<Testimonial>) => void;
+  deleteTestimonial: (id: string) => void;
 }
