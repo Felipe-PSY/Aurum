@@ -11,13 +11,14 @@ import {
   XCircle
 } from 'lucide-react';
 import { CustomDropdown } from '../components/CustomDropdown';
+import { Order } from '../types';
 
 export function AdminOrdersPage() {
   const { orders, updateOrderStatus, addLog } = useDb();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const statusColors: any = {
     'Nuevo': 'bg-blue-400/10 text-blue-400 border-blue-400/20',
@@ -199,11 +200,12 @@ export function AdminOrdersPage() {
                         <button 
                           key={status}
                           onClick={() => {
+                            if (!selectedOrder) return;
                             updateOrderStatus(selectedOrder.id, status as any);
-                            setSelectedOrder({ ...selectedOrder, status });
+                            setSelectedOrder({ ...selectedOrder, status: status as any });
                             addLog('order', `Actualizó pedido #${selectedOrder.id.slice(-6).toUpperCase()} a ${status}`, user?.name || 'Admin');
                           }}
-                          className={`px-3 py-2 text-[8px] uppercase tracking-widest transition-all border ${selectedOrder.status === status ? 'bg-brand-accent text-black border-brand-accent' : 'bg-white/5 text-white/40 border-white/10 hover:border-brand-accent/50'}`}
+                          className={`px-3 py-2 text-[8px] uppercase tracking-widest transition-all border ${selectedOrder?.status === status ? 'bg-brand-accent text-black border-brand-accent' : 'bg-white/5 text-white/40 border-white/10 hover:border-brand-accent/50'}`}
                         >
                           {status}
                         </button>

@@ -13,7 +13,7 @@ import {
   X,
   Upload
 } from 'lucide-react';
-import { Product } from '../data/products';
+import { Product } from '../types';
 import { CustomDropdown } from '../components/CustomDropdown';
 
 export function AdminProductsPage() {

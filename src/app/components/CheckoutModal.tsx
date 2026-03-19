@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Phone, User, MapPin, Wallet } from 'lucide-react';
 import { useDb } from '../context/DbContext';
+import { OrderItem } from '../types';
 
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  items: any[];
+  items: OrderItem[];
   total: number;
 }
 
