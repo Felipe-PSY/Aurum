@@ -116,6 +116,9 @@ export interface DbContextType {
   updateOrderStatus: (id: string, status: Order['status']) => void;
   updateSiteConfig: (config: SiteConfig) => void;
   updateCategories: (categories: Category[]) => void;
+  updateAllPrices: (percentage: number) => void;
+  undoLastPriceAdjustment: () => void;
+  canUndoPriceAdjustment: boolean;
   addLog: (type: ActivityLog['type'], message: string, userName: string) => void;
   addTestimonial: (testimonial: Omit<Testimonial, 'id' | 'date' | 'isVisible'>) => void;
   updateTestimonial: (id: string, updates: Partial<Testimonial>) => void;

@@ -14,6 +14,7 @@ const DbContext = createContext<DbContextType | undefined>(undefined);
 
 export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [previousPrices, setPreviousPrices] = useState<{ id: number; price: number }[] | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -270,11 +271,39 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setTestimonials(prev => prev.filter(t => t.id !== id));
   };
 
+  const updateAllPrices = (percentage: number) => {
+    console.log('DbContext: updateAllPrices called with', percentage);
+    setProducts(prev => {
+      // Save current prices before updating
+      setPreviousPrices(prev.map(p => ({ id: p.id, price: p.price })));
+      const updated = prev.map(p => ({
+        ...p,
+        price: Math.round(p.price * (1 + percentage / 100))
+      }));
+      console.log('DbContext: Updated products', updated.length);
+      return updated;
+    });
+    addLog('inventory', `Ajuste global de precios: ${percentage > 0 ? '+' : ''}${percentage}% aplicado a todos los productos`, 'Sistema');
+  };
+
+  const undoLastPriceAdjustment = () => {
+    if (!previousPrices) return;
+    setProducts(prev => prev.map(p => {
+      const saved = previousPrices.find(s => s.id === p.id);
+      return saved ? { ...p, price: saved.price } : p;
+    }));
+    addLog('inventory', 'Ajuste global de precios revertido al estado anterior', 'Admin');
+    setPreviousPrices(null);
+  };
+
+  const canUndoPriceAdjustment = previousPrices !== null;
+
   return (
     <DbContext.Provider value={{ 
       products, categories, orders, siteConfig, activityLogs, testimonials,
       addProduct, updateProduct, deleteProduct, 
       addOrder, updateOrderStatus, updateSiteConfig, updateCategories,
+      updateAllPrices, undoLastPriceAdjustment, canUndoPriceAdjustment,
       addLog, addTestimonial, updateTestimonial, deleteTestimonial 
     }}>
       {children}
