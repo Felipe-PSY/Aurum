@@ -1,13 +1,11 @@
 import { motion } from 'motion/react';
-import { Instagram, Facebook, Twitter, Mail, Phone, MapPin, Sparkles } from 'lucide-react';
+import { Instagram, Mail, Phone, MapPin, Sparkles } from 'lucide-react';
 import { useDb } from '../context/DbContext';
 
 // footerLinks is now managed in DbContext
 
 const socialLinks = [
   { icon: Instagram, href: "#", label: "Instagram" },
-  { icon: Facebook, href: "#", label: "Facebook" },
-  { icon: Twitter, href: "#", label: "Twitter" }
 ];
 
 export function Footer() {
@@ -125,8 +123,8 @@ export function Footer() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             {socialLinks.map((social) => {
-              const href = (social.label === 'Instagram' && siteConfig.instagram) 
-                ? `https://instagram.com/${siteConfig.instagram.replace('@', '')}` 
+              const href = (social.label === 'Instagram' && siteConfig.instagram)
+                ? `https://instagram.com/${siteConfig.instagram.replace('@', '')}`
                 : social.href;
               return (
                 <a

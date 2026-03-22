@@ -263,8 +263,7 @@ export function AdminProductsPage() {
             options={[
               { value: '', label: 'Todos los Géneros' },
               { value: 'Mujer', label: 'Mujer' },
-              { value: 'Hombre', label: 'Hombre' },
-              { value: 'Unisex', label: 'Unisex' }
+              { value: 'Hombre', label: 'Hombre' }
             ]}
             className="w-48"
           />
@@ -470,7 +469,6 @@ export function AdminProductsPage() {
                         >
                           <option className="bg-brand-primary">Mujer</option>
                           <option className="bg-brand-primary">Hombre</option>
-                          <option className="bg-brand-primary">Unisex</option>
                         </select>
                       </div>
                       <div className="space-y-2">

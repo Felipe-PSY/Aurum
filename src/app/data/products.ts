@@ -3,7 +3,7 @@ export interface Product {
   name: string;
   category: string;
   subCategory?: string;
-  gender: 'Hombre' | 'Mujer' | 'Unisex';
+  gender: 'Hombre' | 'Mujer';
   price: number;
   image: string;
   occasion?: string[];
@@ -24,7 +24,7 @@ export const products: Product[] = [
     gender: "Hombre",
     price: 2500000,
     image: "https://images.unsplash.com/photo-1617038220319-276d3cfab638?q=80&w=1000&auto=format&fit=crop",
-    occasion: ["Grado", "Compromiso"],
+    occasion: ["graduaciones", "compromiso"],
     isFeatured: true
   },
   {
@@ -35,7 +35,7 @@ export const products: Product[] = [
     gender: "Hombre",
     price: 450000,
     image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=1000&auto=format&fit=crop",
-    occasion: ["Matrimonio"]
+    occasion: ["matrimonio"]
   },
   // Anillos - Mujer
   {
@@ -46,7 +46,7 @@ export const products: Product[] = [
     gender: "Mujer",
     price: 4800000,
     image: "https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=1000&auto=format&fit=crop",
-    occasion: ["Compromiso", "Matrimonio"],
+    occasion: ["compromiso", "matrimonio"],
     isFeatured: true,
     isNew: true
   },
@@ -58,7 +58,7 @@ export const products: Product[] = [
     gender: "Mujer",
     price: 3200000,
     image: "https://images.unsplash.com/photo-1598560917505-59a3ad5cb9ca?q=80&w=1000&auto=format&fit=crop",
-    occasion: ["Quinceaños", "Matrimonio"]
+    occasion: ["quinceanos", "matrimonio"]
   },
   // Pulseras - Hombre
   {
@@ -69,7 +69,7 @@ export const products: Product[] = [
     gender: "Hombre",
     price: 3800000,
     image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=1000&auto=format&fit=crop",
-    occasion: ["Grado"]
+    occasion: ["graduaciones"]
   },
   {
     id: 6,
@@ -89,7 +89,7 @@ export const products: Product[] = [
     gender: "Mujer",
     price: 1500000,
     image: "https://images.unsplash.com/photo-1573408301185-9146fe63c803?q=80&w=1000&auto=format&fit=crop",
-    occasion: ["Quinceaños"],
+    occasion: ["quinceanos"],
     isNew: true
   },
   {
@@ -100,7 +100,7 @@ export const products: Product[] = [
     gender: "Mujer",
     price: 4950000,
     image: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=1000&auto=format&fit=crop",
-    occasion: ["Matrimonio"]
+    occasion: ["matrimonio"]
   },
   // Cadenas - Hombre
   {
@@ -137,7 +137,7 @@ export const products: Product[] = [
     id: 12,
     name: "Dije Cruz de Oro",
     category: "Dijes",
-    gender: "Unisex",
+    gender: "Mujer",
     price: 650000,
     image: "https://images.unsplash.com/photo-1612042718910-b99b531d054d?q=80&w=1000&auto=format&fit=crop"
   },
@@ -147,7 +147,7 @@ export const products: Product[] = [
     name: "Esmeralda Certificada 1ct",
     category: "Piedras",
     subCategory: "Esmeraldas",
-    gender: "Unisex",
+    gender: "Mujer",
     price: 4500000,
     image: "https://images.unsplash.com/photo-1615111784767-4d9a2d338166?q=80&w=1000&auto=format&fit=crop"
   },
@@ -156,7 +156,7 @@ export const products: Product[] = [
     id: 14,
     name: "Estuche Premium Terciopelo",
     category: "Estuches",
-    gender: "Unisex",
+    gender: "Mujer",
     price: 150000,
     image: "https://images.unsplash.com/photo-1598121622329-873d6e5a6669?q=80&w=1000&auto=format&fit=crop"
   }

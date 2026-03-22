@@ -10,6 +10,8 @@ interface FilterSidebarProps {
   setSelectedCategories: (categories: string[]) => void;
   selectedGenders: string[];
   setSelectedGenders: (genders: string[]) => void;
+  showCategoryFilter?: boolean;
+  showGenderFilter?: boolean;
 }
 
 export function FilterSidebar({
@@ -18,10 +20,12 @@ export function FilterSidebar({
   selectedCategories,
   setSelectedCategories,
   selectedGenders,
-  setSelectedGenders
+  setSelectedGenders,
+  showCategoryFilter = true,
+  showGenderFilter = true,
 }: FilterSidebarProps) {
   const categories = ["Anillos", "Pulseras", "Cadenas", "Aretes", "Dijes", "Balines", "Piedras", "Estuches"];
-  const genders = ["Hombre", "Mujer", "Unisex"];
+  const genders = ["Hombre", "Mujer"];
 
   const handleCategoryChange = (category: string) => {
     if (selectedCategories.includes(category)) {
@@ -47,11 +51,14 @@ export function FilterSidebar({
     }).format(value);
   };
 
+  // Build default open accordion sections
+  const defaultOpen = ["price", ...(showGenderFilter ? ["gender"] : []), ...(showCategoryFilter ? ["category"] : [])];
+
   return (
     <div className="w-full space-y-8 p-6 bg-white/5 border border-white/10 backdrop-blur-md">
       <h2 className="font-['Cormorant_Garamond'] text-2xl text-brand-accent mb-6">Filtros</h2>
 
-      <Accordion type="multiple" defaultValue={["price", "gender", "category"]} className="w-full">
+      <Accordion type="multiple" defaultValue={defaultOpen} className="w-full">
         {/* Rango de Precio */}
         <AccordionItem value="price" className="border-white/10">
           <AccordionTrigger className="text-white hover:text-brand-accent font-['Montserrat'] text-sm tracking-widest uppercase">
@@ -72,53 +79,57 @@ export function FilterSidebar({
           </AccordionContent>
         </AccordionItem>
 
-        {/* Género */}
-        <AccordionItem value="gender" className="border-white/10">
-          <AccordionTrigger className="text-white hover:text-brand-accent font-['Montserrat'] text-sm tracking-widest uppercase">
-            Género
-          </AccordionTrigger>
-          <AccordionContent className="pt-4 space-y-4">
-            {genders.map((gender) => (
-              <div key={gender} className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleGenderChange(gender)}>
-                <Checkbox 
-                  id={`gender-${gender}`} 
-                  checked={selectedGenders.includes(gender)}
-                  className="border-white/20 data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent"
-                />
-                <Label 
-                  htmlFor={`gender-${gender}`}
-                  className="text-brand-text group-hover:text-white transition-colors cursor-pointer font-['Montserrat'] font-light"
-                >
-                  {gender}
-                </Label>
-              </div>
-            ))}
-          </AccordionContent>
-        </AccordionItem>
+        {/* Género – hidden for Quinceañeros */}
+        {showGenderFilter && (
+          <AccordionItem value="gender" className="border-white/10">
+            <AccordionTrigger className="text-white hover:text-brand-accent font-['Montserrat'] text-sm tracking-widest uppercase">
+              Género
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              {genders.map((gender) => (
+                <div key={gender} className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleGenderChange(gender)}>
+                  <Checkbox 
+                    id={`gender-${gender}`} 
+                    checked={selectedGenders.includes(gender)}
+                    className="border-white/20 data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent"
+                  />
+                  <Label 
+                    htmlFor={`gender-${gender}`}
+                    className="text-brand-text group-hover:text-white transition-colors cursor-pointer font-['Montserrat'] font-light"
+                  >
+                    {gender}
+                  </Label>
+                </div>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-        {/* Categoría */}
-        <AccordionItem value="category" className="border-white/10">
-          <AccordionTrigger className="text-white hover:text-brand-accent font-['Montserrat'] text-sm tracking-widest uppercase">
-            Categoría
-          </AccordionTrigger>
-          <AccordionContent className="pt-4 space-y-4">
-            {categories.map((category) => (
-              <div key={category} className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleCategoryChange(category)}>
-                <Checkbox 
-                  id={`cat-${category}`} 
-                  checked={selectedCategories.includes(category)}
-                  className="border-white/20 data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent"
-                />
-                <Label 
-                  htmlFor={`cat-${category}`}
-                  className="text-brand-text group-hover:text-white transition-colors cursor-pointer font-['Montserrat'] font-light"
-                >
-                  {category}
-                </Label>
-              </div>
-            ))}
-          </AccordionContent>
-        </AccordionItem>
+        {/* Categoría – hidden when browsing within a specific category */}
+        {showCategoryFilter && (
+          <AccordionItem value="category" className="border-white/10">
+            <AccordionTrigger className="text-white hover:text-brand-accent font-['Montserrat'] text-sm tracking-widest uppercase">
+              Categoría
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              {categories.map((category) => (
+                <div key={category} className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleCategoryChange(category)}>
+                  <Checkbox 
+                    id={`cat-${category}`} 
+                    checked={selectedCategories.includes(category)}
+                    className="border-white/20 data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent"
+                  />
+                  <Label 
+                    htmlFor={`cat-${category}`}
+                    className="text-brand-text group-hover:text-white transition-colors cursor-pointer font-['Montserrat'] font-light"
+                  >
+                    {category}
+                  </Label>
+                </div>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        )}
       </Accordion>
       
       <button 

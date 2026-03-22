@@ -58,7 +58,7 @@ export function CatalogPage() {
       // Filtro de Género (desde la URL o desde el Sidebar)
       if (gender) {
         const urlGender = gender.charAt(0).toUpperCase() + gender.slice(1);
-        if (product.gender !== urlGender && product.gender !== 'Unisex') return false;
+        if (product.gender !== urlGender) return false;
       }
       if (selectedGenders.length > 0 && !selectedGenders.includes(product.gender)) return false;
 
@@ -121,6 +121,7 @@ export function CatalogPage() {
               setSelectedCategories={setSelectedCategories}
               selectedGenders={selectedGenders}
               setSelectedGenders={setSelectedGenders}
+              showCategoryFilter={!category}
             />
           </aside>
 
@@ -144,6 +145,7 @@ export function CatalogPage() {
                   setSelectedCategories={setSelectedCategories}
                   selectedGenders={selectedGenders}
                   setSelectedGenders={setSelectedGenders}
+                  showCategoryFilter={!category}
                 />
               </SheetContent>
             </Sheet>

@@ -6,6 +6,7 @@ import { CatalogPage } from './pages/CatalogPage';
 import { ContactPage } from './pages/ContactPage';
 import { CartPage } from './pages/CartPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
+import { OccasionPage } from './pages/OccasionPage';
 import { CartProvider } from './context/CartContext';
 import { DbProvider } from './context/DbContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -43,6 +44,7 @@ export default function App() {
                 {/* Storefront Routes */}
                 <Route path="/" element={<HomePage />} />
                 <Route path="/catalog/:param1?/:param2?/:param3?" element={<CatalogPage />} />
+                <Route path="/ocasiones/:slug" element={<OccasionPage />} />
                 <Route path="/product/:id" element={<ProductDetailPage />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/contacto" element={<ContactPage />} />

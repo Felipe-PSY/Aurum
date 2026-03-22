@@ -90,8 +90,27 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         const savedLogs = localStorage.getItem('aurum_logs');
         const savedTestimonials = localStorage.getItem('aurum_testimonials');
 
-        if (savedProducts) setProducts(JSON.parse(savedProducts));
-        else setProducts(initialProducts.map(p => ({
+        if (savedProducts) {
+          const parsed = JSON.parse(savedProducts);
+          // Migrate: convert any legacy 'Unisex' gender to 'Mujer'
+          // and normalize occasion values to lowercase slugs
+          const OCCASION_SLUG_MAP: Record<string, string> = {
+            matrimonio: 'matrimonio', Matrimonio: 'matrimonio',
+            compromiso: 'compromiso', Compromiso: 'compromiso',
+            graduaciones: 'graduaciones', Graduaciones: 'graduaciones',
+            grado: 'graduaciones', Grado: 'graduaciones',
+            quinceanos: 'quinceanos', Quinceanos: 'quinceanos',
+            quinceaños: 'quinceanos', Quinceaños: 'quinceanos',
+          };
+          const migrated = parsed.map((p: any) => ({
+            ...p,
+            gender: p.gender === 'Unisex' ? 'Mujer' : p.gender,
+            occasion: p.occasion
+              ? p.occasion.map((o: string) => OCCASION_SLUG_MAP[o] ?? o.toLowerCase())
+              : p.occasion,
+          }));
+          setProducts(migrated);
+        } else setProducts(initialProducts.map(p => ({
           ...p,
           stock: p.stock ?? 10,
           code: p.code ?? `PRD-${p.id.toString().padStart(4, '0')}`
