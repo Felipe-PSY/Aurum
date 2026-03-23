@@ -2,21 +2,63 @@ import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
 import { motion } from 'motion/react';
 import { ShoppingBag, ChevronLeft, Star, ShieldCheck, Truck, RefreshCw, Plus, Minus } from 'lucide-react';
-import { products } from '../data/products';
+import { useDb } from '../context/DbContext';
 import { useCart } from '../context/CartContext';
 import { ImageWithFallback } from '../components/ImageWithFallback';
 import { ProductCard } from '../components/ProductCard';
 import { CheckoutModal } from '../components/CheckoutModal';
+import { supabase } from '../../lib/supabase';
 
 export function ProductDetailPage() {
   const { id } = useParams();
+  const { products } = useDb();
   const { cart, addToCart, updateQuantity } = useCart();
   const [activeImage, setActiveImage] = useState(0);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [fetchedProduct, setFetchedProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const product = useMemo(() => 
-    products.find(p => String(p.id) === id), 
-  [id]);
+  useEffect(() => {
+    async function getProduct() {
+      setLoading(true);
+      // Check context first
+      const found = products.find(p => String(p.id) === id);
+      if (found) {
+        setFetchedProduct(found);
+        setLoading(false);
+        return;
+      }
+
+      // If not in context, fetch from Supabase
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, product_occasions(occasion_id)')
+        .eq('id', id)
+        .single();
+      
+      if (data && !error) {
+        setFetchedProduct({
+          id: data.id,
+          code: data.code,
+          name: data.name,
+          description: data.description,
+          price: Number(data.price),
+          previousPrice: data.previous_price ? Number(data.previous_price) : undefined,
+          gender: data.gender,
+          image: data.image,
+          category: data.category,
+          subCategory: data.sub_category,
+          isFeatured: data.is_featured,
+          stock: data.stock,
+          occasion: data.product_occasions?.map((po: any) => po.occasion_id) || []
+        });
+      }
+      setLoading(false);
+    }
+    getProduct();
+  }, [id, products]);
+
+  const product = fetchedProduct;
 
   const cartItem = useMemo(() => 
     cart.find(item => String(item.id) === id), 
@@ -27,11 +69,19 @@ export function ProductDetailPage() {
     return products
       .filter(p => p.category === product.category && p.id !== product.id)
       .slice(0, 3);
-  }, [product]);
+  }, [product, products]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-brand-primary flex items-center justify-center">
+        <div className="w-12 h-12 border-2 border-brand-accent border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
