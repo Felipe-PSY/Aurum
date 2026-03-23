@@ -45,14 +45,23 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           subCategories: c.sub_categories || [] 
         })) || [];
         
-        // Emulate Occasions as a Category for Admin Panel backwards compatibility
+        // Emulate or Update Occasions Category
         if (occData && occData.length > 0) {
-          mappedCats.push({
-            id: 'ocasiones',
-            name: 'Ocasiones',
-            subCategories: occData.map((o: any) => o.name),
-            isActive: true
-          });
+          const occSubNames = Array.from(new Set(occData.map((o: any) => o.name))); // Unique names
+          const existingOccIdx = mappedCats.findIndex(c => c.id === 'ocasiones');
+          
+          if (existingOccIdx !== -1) {
+            // Merge with existing row if found
+            mappedCats[existingOccIdx].subCategories = occSubNames;
+          } else {
+            // Add manually if missing from table
+            mappedCats.push({
+              id: 'ocasiones',
+              name: 'Ocasiones',
+              subCategories: occSubNames,
+              isActive: true
+            });
+          }
         }
         setCategories(mappedCats);
 
