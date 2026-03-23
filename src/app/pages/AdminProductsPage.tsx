@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useDb } from '../context/DbContext';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -62,15 +62,17 @@ export function AdminProductsPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredProducts = products.filter(p => {
-    const term = searchTerm.toLowerCase();
-    const matchSearch = p.name.toLowerCase().includes(term) ||
-      p.category.toLowerCase().includes(term) ||
-      (p.code?.toLowerCase() || '').includes(term);
-    const matchCat = filterCategory ? p.category === filterCategory : true;
-    const matchGen = filterGender ? p.gender === filterGender : true;
-    return matchSearch && matchCat && matchGen;
-  });
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      const term = searchTerm.toLowerCase();
+      const matchSearch = p.name.toLowerCase().includes(term) ||
+        p.category.toLowerCase().includes(term) ||
+        (p.code?.toLowerCase() || '').includes(term);
+      const matchCat = filterCategory ? p.category === filterCategory : true;
+      const matchGen = filterGender ? p.gender === filterGender : true;
+      return matchSearch && matchCat && matchGen;
+    });
+  }, [products, searchTerm, filterCategory, filterGender]);
 
   const handleDelete = (id: number | string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.')) {

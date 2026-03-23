@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'motion/react';
 import { ShoppingBag, Plus, Minus } from 'lucide-react';
 import { Link } from 'react-router';
@@ -10,7 +11,7 @@ interface ProductCardProps {
   index: number;
 }
 
-export function ProductCard({ product, index }: ProductCardProps) {
+export const ProductCard = memo(({ product, index }: ProductCardProps) => {
   const { cart, addToCart, updateQuantity } = useCart();
   const cartItem = cart.find(item => item.id === product.id);
   const formattedPrice = new Intl.NumberFormat('es-CO', {
@@ -128,4 +129,4 @@ export function ProductCard({ product, index }: ProductCardProps) {
       </div>
     </motion.div>
   );
-}
+});
