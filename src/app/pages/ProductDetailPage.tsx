@@ -51,17 +51,17 @@ export function ProductDetailPage() {
   }).format(product.price);
 
   return (
-    <div className="min-h-screen bg-brand-primary pt-32 pb-24 px-6 font-['Montserrat']">
+    <div className="min-h-screen bg-brand-primary pt-32 pb-24 px-4 sm:px-6 font-['Montserrat']">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumbs */}
-        <Link to="/catalog" className="flex items-center gap-2 text-brand-text/40 hover:text-brand-accent transition-colors mb-12 text-xs tracking-widest uppercase">
+        <Link to="/catalog" className="flex items-center gap-2 text-brand-text/40 hover:text-brand-accent transition-colors mb-8 sm:mb-12 text-xs tracking-widest uppercase">
           <ChevronLeft className="w-4 h-4" />
           Volver a {product.category}
         </Link>
 
-        <div className="grid lg:grid-cols-2 gap-16 xl:gap-24 mb-32">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 xl:gap-24 mb-24 lg:mb-32">
           {/* Imágenes */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -74,7 +74,7 @@ export function ProductDetailPage() {
               />
             </motion.div>
             
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-2 sm:gap-4">
               {[0, 1, 2, 3].map((i) => (
                 <button 
                   key={i}
@@ -93,9 +93,9 @@ export function ProductDetailPage() {
 
           {/* Detalles */}
           <div className="flex flex-col">
-            <div className="mb-10">
-              <div className="flex items-center gap-4 mb-4">
-                <span className="text-brand-accent text-[10px] tracking-[0.3em] uppercase border border-brand-accent/30 px-3 py-1 bg-brand-accent/5">
+            <div className="mb-6 sm:mb-10">
+              <div className="flex items-center gap-4 mb-3 sm:mb-4">
+                <span className="text-brand-accent text-[9px] sm:text-[10px] tracking-[0.3em] uppercase border border-brand-accent/30 px-2 sm:px-3 py-1 bg-brand-accent/5">
                   Pieza de Autor
                 </span>
                 <div className="flex items-center gap-1">
@@ -103,7 +103,7 @@ export function ProductDetailPage() {
                 </div>
               </div>
               
-              <h1 className="font-['Cormorant_Garamond'] text-6xl text-white mb-4 tracking-wide leading-tight">
+              <h1 className="font-['Cormorant_Garamond'] text-4xl sm:text-5xl lg:text-6xl text-white mb-4 tracking-wide leading-tight">
                 {product.name}
               </h1>
               <p className="text-3xl font-['Montserrat'] text-brand-accent tracking-tighter mb-8 font-light italic flex items-center gap-4">

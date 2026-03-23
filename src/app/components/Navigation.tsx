@@ -163,14 +163,25 @@ export function Navigation() {
             </Link>
           </div>
 
-          {/* Botón de Menú Móvil */}
-          <button
-            className="md:hidden text-white"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Alternar Menú"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Acciones de Móvil */}
+          <div className="flex md:hidden items-center gap-4">
+            <Link to="/cart" className="relative text-brand-text hover:text-brand-accent transition-colors duration-300 p-2">
+              <ShoppingBag className="w-5 h-5 md:w-6 md:h-6" />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 w-4 h-4 bg-brand-accent rounded-full flex items-center justify-center text-black text-[10px] font-bold">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+            
+            <button
+              className="relative z-[60] text-white p-2 hover:bg-white/10 rounded-full transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Alternar Menú"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 

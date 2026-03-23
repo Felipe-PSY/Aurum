@@ -140,7 +140,7 @@ export function AdminOrdersPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="relative w-full max-w-2xl bg-brand-secondary border border-white/10 shadow-2xl p-10"
+              className="relative w-full max-w-2xl bg-brand-secondary border border-white/10 shadow-2xl p-6 sm:p-10"
             >
               <button onClick={() => setSelectedOrder(null)} className="absolute top-6 right-6 text-white/40 hover:text-white">
                 <XCircle className="w-6 h-6" />
@@ -203,7 +203,7 @@ export function AdminOrdersPage() {
                             if (!selectedOrder) return;
                             updateOrderStatus(selectedOrder.id, status as any);
                             setSelectedOrder({ ...selectedOrder, status: status as any });
-                            addLog('order', `Actualizó pedido #${selectedOrder.id.slice(-6).toUpperCase()} a ${status}`, user?.name || 'Admin');
+                            addLog('order', `Actualizó pedido #${selectedOrder.id.slice(-6).toUpperCase()} a ${status}`, user?.email || 'Admin');
                           }}
                           className={`px-3 py-2 text-[8px] uppercase tracking-widest transition-all border ${selectedOrder?.status === status ? 'bg-brand-accent text-black border-brand-accent' : 'bg-white/5 text-white/40 border-white/10 hover:border-brand-accent/50'}`}
                         >

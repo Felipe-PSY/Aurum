@@ -153,20 +153,20 @@ export function AdminProductsPage() {
           <h1 className="font-['Cormorant_Garamond'] text-4xl text-white italic tracking-wide mb-1">Gestión de Productos</h1>
           <p className="text-brand-text/40 text-[10px] tracking-[0.3em] uppercase">Controla tu catálogo completo sin código</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => setShowAdjustmentTool(!showAdjustmentTool)}
-            className="flex items-center gap-3 bg-white/5 text-white/60 border border-white/10 px-6 py-4 font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-white/10 transition-all shadow-xl"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white/5 text-white/60 border border-white/10 px-4 py-3 sm:px-6 sm:py-4 font-bold text-[9px] sm:text-[10px] tracking-[0.2em] uppercase hover:bg-white/10 transition-all shadow-xl"
           >
-            <TrendingUp className="w-4 h-4 text-brand-accent" />
-            Ajuste Global
+            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-brand-accent" />
+            <span>Ajuste Global</span>
           </button>
           <button
             onClick={openCreate}
-            className="flex items-center gap-3 bg-brand-accent text-black px-6 py-4 font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all shadow-xl"
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-brand-accent text-black px-4 py-3 sm:px-6 sm:py-4 font-bold text-[9px] sm:text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all shadow-xl"
           >
-            <Plus className="w-4 h-4" />
-            Nuevo Producto
+            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span>Nuevo Producto</span>
           </button>
         </div>
       </div>
@@ -180,7 +180,7 @@ export function AdminProductsPage() {
             exit={{ opacity: 0, height: 0, marginBottom: 0 }}
             className="overflow-hidden"
           >
-            <div className="bg-brand-secondary border border-brand-accent/20 p-8 shadow-2xl relative overflow-hidden group">
+            <div className="bg-brand-secondary border border-brand-accent/20 p-4 sm:p-8 shadow-2xl relative overflow-hidden group">
               {/* Subtle background detail */}
               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                 <Percent className="w-32 h-32 text-brand-accent" />
@@ -197,8 +197,8 @@ export function AdminProductsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 w-full md:w-auto">
-                  <div className="relative flex-1 md:w-48">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                  <div className="relative flex-1 sm:w-48">
                     <input
                       type="number"
                       step="0.1"
@@ -210,26 +210,28 @@ export function AdminProductsPage() {
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-accent font-bold">%</span>
                   </div>
-                  <button
-                    onClick={handleBulkPriceUpdate}
-                    disabled={!adjustmentPercentage}
-                    className="px-8 py-4 bg-brand-accent text-black font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                  >
-                    Actualizar Todo
-                  </button>
-                  {canUndoPriceAdjustment && (
+                  <div className="flex gap-2">
                     <button
-                      onClick={undoLastPriceAdjustment}
-                      title="Revertir al ajuste anterior"
-                      className="flex items-center gap-2 px-6 py-4 bg-white/5 border border-white/10 text-white/60 font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-white/10 hover:text-white transition-all whitespace-nowrap"
+                      onClick={handleBulkPriceUpdate}
+                      disabled={!adjustmentPercentage}
+                      className="flex-1 sm:flex-none px-6 py-4 bg-brand-accent text-black font-bold text-[9px] sm:text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                     >
-                      <Undo2 className="w-4 h-4" />
-                      Deshacer
+                      Actualizar
                     </button>
-                  )}
+                    {canUndoPriceAdjustment && (
+                      <button
+                        onClick={undoLastPriceAdjustment}
+                        title="Revertir"
+                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-4 bg-white/5 border border-white/10 text-white/60 font-bold text-[9px] sm:text-[10px] tracking-[0.2em] uppercase hover:bg-white/10 hover:text-white transition-all whitespace-nowrap"
+                      >
+                        <Undo2 className="w-4 h-4" />
+                        Deshacer
+                      </button>
+                    )}
+                  </div>
                   <button
                     onClick={() => setShowAdjustmentTool(false)}
-                    className="p-4 text-white/20 hover:text-white transition-colors"
+                    className="absolute top-0 right-0 p-2 sm:p-4 text-white/20 hover:text-white transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -252,25 +254,25 @@ export function AdminProductsPage() {
             className="w-full bg-transparent pl-12 pr-4 py-3 text-xs text-white outline-none"
           />
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
           <CustomDropdown
             value={filterCategory}
             onChange={setFilterCategory}
             options={[
-              { value: '', label: 'Todas las Categorías' },
+              { value: '', label: 'Categorías' },
               ...categories.filter(c => c.isActive).map(c => ({ value: c.name, label: c.name }))
             ]}
-            className="w-48"
+            className="flex-1 md:w-48"
           />
           <CustomDropdown
             value={filterGender}
             onChange={setFilterGender}
             options={[
-              { value: '', label: 'Todos los Géneros' },
+              { value: '', label: 'Géneros' },
               { value: 'Mujer', label: 'Mujer' },
               { value: 'Hombre', label: 'Hombre' }
             ]}
-            className="w-48"
+            className="flex-1 md:w-48"
           />
         </div>
       </div>
@@ -357,7 +359,7 @@ export function AdminProductsPage() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="relative w-full max-w-4xl bg-brand-secondary border border-white/10 shadow-2xl flex flex-col max-h-[90vh]"
             >
-              <div className="p-8 border-b border-white/5 flex items-center justify-between">
+              <div className="p-6 sm:p-8 border-b border-white/5 flex items-center justify-between">
                 <h2 className="font-['Cormorant_Garamond'] text-3xl text-white italic tracking-wide">
                   {selectedProduct ? 'Editar Producto' : 'Nuevo Producto'}
                 </h2>
@@ -366,7 +368,7 @@ export function AdminProductsPage() {
                 </button>
               </div>
 
-              <div className="p-8 overflow-y-auto flex-1 bg-gradient-to-b from-brand-secondary to-brand-primary">
+              <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-gradient-to-b from-brand-secondary to-brand-primary">
                 <form id="productForm" onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-12">
                   {/* Left Column: Media */}
                   <div className="space-y-8">
@@ -517,9 +519,9 @@ export function AdminProductsPage() {
                 </form>
               </div>
 
-              <div className="p-8 border-t border-white/5 flex justify-end gap-4 bg-brand-primary">
-                <button onClick={() => setIsModalOpen(false)} className="px-8 py-4 text-[10px] text-white/40 uppercase tracking-[0.2em] hover:text-white transition-all">Cancelar</button>
-                <button type="submit" form="productForm" className="px-10 py-4 bg-brand-accent text-black font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all shadow-xl">
+              <div className="p-6 sm:p-8 border-t border-white/5 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 bg-brand-primary">
+                <button onClick={() => setIsModalOpen(false)} className="order-2 sm:order-1 px-8 py-4 text-[10px] text-white/40 uppercase tracking-[0.2em] hover:text-white transition-all">Cancelar</button>
+                <button type="submit" form="productForm" className="order-1 sm:order-2 px-10 py-4 bg-brand-accent text-black font-bold text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all shadow-xl">
                   {selectedProduct ? 'Guardar Cambios' : 'Crear Producto'}
                 </button>
               </div>

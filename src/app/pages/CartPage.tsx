@@ -17,7 +17,7 @@ export function CartPage() {
   }).format(price);
 
   return (
-    <div className="min-h-screen bg-brand-primary pt-32 pb-24 px-6 font-['Montserrat']">
+    <div className="min-h-screen bg-brand-primary pt-32 pb-24 px-4 sm:px-6 font-['Montserrat']">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
@@ -53,7 +53,7 @@ export function CartPage() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
-                    className="flex flex-col sm:flex-row gap-6 p-6 bg-white/[0.02] border border-white/5 group hover:border-brand-accent/30 transition-all duration-500"
+                    className="flex flex-col sm:flex-row gap-6 p-4 sm:p-6 bg-white/[0.02] border border-white/5 group hover:border-brand-accent/30 transition-all duration-500"
                   >
                     {/* Imagen */}
                     <Link to={`/product/${item.id}`} className="w-full sm:w-32 h-40 sm:h-32 shrink-0 overflow-hidden bg-[#1A1A1A]">
@@ -68,7 +68,7 @@ export function CartPage() {
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div className="flex justify-between items-start">
                         <div>
-                          <Link to={`/product/${item.id}`} className="font-['Cormorant_Garamond'] text-2xl text-white hover:text-brand-accent transition-colors block mb-1">
+                          <Link to={`/product/${item.id}`} className="font-['Cormorant_Garamond'] text-xl sm:text-2xl text-white hover:text-brand-accent transition-colors block mb-1">
                             {item.name}
                           </Link>
                           <p className="text-brand-text/40 text-[10px] tracking-widest uppercase">
@@ -127,10 +127,9 @@ export function CartPage() {
             </AnimatePresence>
           </div>
 
-          {/* Resumen */}
           <div className="lg:col-span-1">
-            <div className="sticky top-40 bg-white/[0.03] border border-white/10 p-8 space-y-8">
-              <h2 className="font-['Cormorant_Garamond'] text-3xl text-white tracking-wide border-b border-white/5 pb-4">
+            <div className="sticky top-40 bg-white/[0.03] border border-white/10 p-6 sm:p-8 space-y-8">
+              <h2 className="font-['Cormorant_Garamond'] text-2xl sm:text-3xl text-white tracking-wide border-b border-white/5 pb-4">
                 Resumen de Pedido
               </h2>
               

@@ -27,7 +27,7 @@ export function AdminLayout() {
   const { activityLogs, siteConfig, updateSiteConfig } = useDb();
   const location = useLocation();
   const navigate = useNavigate();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
   const [isLightMode, setIsLightMode] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
@@ -175,15 +175,15 @@ export function AdminLayout() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 bg-brand-primary">
         {/* Header */}
-        <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-brand-secondary/50 backdrop-blur-md sticky top-0 z-30">
-          <div className="flex items-center gap-6">
+        <header className="h-20 border-b border-white/5 flex items-center justify-between px-4 sm:px-8 bg-brand-secondary/50 backdrop-blur-md sticky top-0 z-30">
+          <div className="flex items-center gap-3 sm:gap-6">
             <button 
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="text-white/40 hover:text-white transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="hidden md:flex items-center gap-2 text-[10px] text-white/20 uppercase tracking-widest">
+            <div className="hidden lg:flex items-center gap-2 text-[10px] text-white/20 uppercase tracking-widest">
               <span>Admin</span>
               <ChevronRight className="w-3 h-3" />
               <span className="text-brand-accent">{menuItems.find(i => i.path === location.pathname)?.name || 'Dashboard'}</span>
@@ -221,7 +221,7 @@ export function AdminLayout() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full mt-4 w-80 bg-brand-secondary border border-white/10 shadow-2xl z-50 overflow-hidden"
+                    className="absolute right-0 top-full mt-4 w-[calc(100vw-32px)] sm:w-80 bg-brand-secondary border border-white/10 shadow-2xl z-50 overflow-hidden"
                   >
                     <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
                       <h4 className="text-[10px] text-brand-accent uppercase tracking-widest font-bold">Notificaciones</h4>
@@ -253,8 +253,8 @@ export function AdminLayout() {
               </AnimatePresence>
             </div>
 
-            <div className="flex items-center gap-4 border-l border-white/10 pl-6 ml-2">
-              <div className="text-right hidden sm:block">
+            <div className="flex items-center gap-3 sm:gap-4 border-l border-white/10 pl-4 sm:pl-6 ml-1 sm:ml-2">
+              <div className="text-right hidden sm:flex flex-col items-end">
                 <div className="flex items-center gap-2 justify-end">
                    {isEditingName ? (
                      <input 
@@ -283,13 +283,16 @@ export function AdminLayout() {
                   )}
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-full bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center font-['Cormorant_Garamond'] text-brand-accent text-xl italic font-bold uppercase overflow-hidden">
+              <button 
+                onClick={() => setIsEditingName(true)}
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center font-['Cormorant_Garamond'] text-brand-accent text-lg sm:text-xl italic font-bold uppercase overflow-hidden shrink-0"
+              >
                 {isEditingName ? (
                   adminNameInput.charAt(0) || 'A'
                 ) : (
                   (siteConfig.adminName || user?.email || 'A').charAt(0)
                 )}
-              </div>
+              </button>
             </div>
           </div>
         </header>

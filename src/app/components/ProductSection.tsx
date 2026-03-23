@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { ShoppingBag } from 'lucide-react';
+import { Link } from 'react-router';
 import { ImageWithFallback } from './ImageWithFallback';
 
 const products = [
@@ -59,14 +60,15 @@ export function ProductSection() {
           {products.map((product, index) => (
             <motion.div
               key={product.id}
-              className="group relative bg-white/5 backdrop-blur-sm overflow-hidden cursor-pointer"
+              className="group relative bg-white/5 backdrop-blur-sm overflow-hidden"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              {/* Contenedor de Imagen */}
-              <div className="relative h-[400px] overflow-hidden bg-black/50">
+              <Link to={`/product/${product.id}`} className="block">
+                {/* Contenedor de Imagen */}
+                <div className="relative h-[300px] sm:h-[400px] overflow-hidden bg-black/50">
                 <ImageWithFallback
                   src={product.image}
                   alt={product.name}
@@ -93,18 +95,19 @@ export function ProductSection() {
                 </div>
               </div>
 
-              {/* Información del Producto */}
-              <div className="p-6">
-                <p className="font-['Montserrat'] text-brand-accent text-xs tracking-wider mb-2" style={{ fontWeight: 400 }}>
-                  {product.collection}
-                </p>
-                <h3 className="font-['Cormorant_Garamond'] text-xl text-white mb-3" style={{ fontWeight: 400 }}>
-                  {product.name}
-                </h3>
-                <p className="font-['Montserrat'] text-brand-text text-sm" style={{ fontWeight: 300 }}>
-                  {product.price}
-                </p>
-              </div>
+                {/* Información del Producto */}
+                <div className="p-4 sm:p-6">
+                  <p className="font-['Montserrat'] text-brand-accent text-[10px] sm:text-xs tracking-wider mb-1 sm:mb-2" style={{ fontWeight: 400 }}>
+                    {product.collection}
+                  </p>
+                  <h3 className="font-['Cormorant_Garamond'] text-lg sm:text-xl text-white mb-2 sm:mb-3" style={{ fontWeight: 400 }}>
+                    {product.name}
+                  </h3>
+                  <p className="font-['Montserrat'] text-brand-text text-xs sm:text-sm" style={{ fontWeight: 300 }}>
+                    {product.price}
+                  </p>
+                </div>
+              </Link>
 
               {/* Efecto de brillo */}
               <motion.div

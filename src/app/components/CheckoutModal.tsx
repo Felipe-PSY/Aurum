@@ -104,7 +104,7 @@ ${formData.infoAdicional ? `Información adicional: ${formData.infoAdicional}\n`
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center px-6 overflow-y-auto py-10">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 sm:px-6 overflow-y-auto py-10">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -117,7 +117,7 @@ ${formData.infoAdicional ? `Información adicional: ${formData.infoAdicional}\n`
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-2xl bg-brand-primary border border-white/10 shadow-2xl p-8 md:p-12 my-auto"
+            className="relative w-full max-w-2xl bg-brand-primary border border-white/10 shadow-2xl p-6 sm:p-8 md:p-12 my-auto"
           >
             <button 
               onClick={onClose}
