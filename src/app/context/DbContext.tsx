@@ -172,92 +172,131 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   const addProduct = async (p: Product) => {
-    const newId = crypto.randomUUID();
-    setProducts(prev => [...prev, { ...p, id: newId }]); 
-    
-    await supabase.from('products').insert({
-      id: newId, code: p.code, name: p.name, description: p.description, price: p.price,
-      previous_price: p.previousPrice, gender: p.gender, image: p.image,
-      category: p.category, sub_category: p.subCategory, is_featured: p.isFeatured, stock: p.stock
-    });
-    
-    if (p.occasion && p.occasion.length > 0) {
-      const occs = p.occasion.map(o => ({ product_id: newId, occasion_id: o.toLowerCase() }));
-      await supabase.from('product_occasions').insert(occs);
+    try {
+      const newId = crypto.randomUUID();
+      const { error } = await supabase.from('products').insert({
+        id: newId, code: p.code, name: p.name, description: p.description, price: p.price,
+        previous_price: p.previousPrice, gender: p.gender, image: p.image,
+        category: p.category, sub_category: p.subCategory, is_featured: p.isFeatured, stock: p.stock
+      });
+      
+      if (error) throw error;
+
+      if (p.occasion && p.occasion.length > 0) {
+        const occs = p.occasion.map(o => ({ product_id: newId, occasion_id: o.toLowerCase() }));
+        const { error: occError } = await supabase.from('product_occasions').insert(occs);
+        if (occError) console.error("Error occasions:", occError);
+      }
+      
+      setProducts(prev => [...prev, { ...p, id: newId }]); 
+      await addLog('product', `Nuevo producto creado: ${p.name}`, 'Sistema');
+    } catch (err: any) {
+      console.error("Error creating product:", err);
+      alert(`Error al guardar producto: ${err.message || 'Error en servidor'}`);
     }
   };
 
   const updateProduct = async (p: Product) => {
-    setProducts(prev => prev.map(item => item.id === p.id ? p : item));
-    await supabase.from('products').update({
-      code: p.code, name: p.name, description: p.description, price: p.price,
-      previous_price: p.previousPrice, gender: p.gender, image: p.image,
-      category: p.category, sub_category: p.subCategory, is_featured: p.isFeatured, stock: p.stock
-    }).eq('id', p.id);
+    try {
+      const { error } = await supabase.from('products').update({
+        code: p.code, name: p.name, description: p.description, price: p.price,
+        previous_price: p.previousPrice, gender: p.gender, image: p.image,
+        category: p.category, sub_category: p.subCategory, is_featured: p.isFeatured, stock: p.stock
+      }).eq('id', p.id);
 
-    await supabase.from('product_occasions').delete().eq('product_id', p.id);
-    if (p.occasion && p.occasion.length > 0) {
-      const occs = p.occasion.map(o => ({ product_id: p.id, occasion_id: o.toLowerCase() }));
-      await supabase.from('product_occasions').insert(occs);
+      if (error) throw error;
+
+      await supabase.from('product_occasions').delete().eq('product_id', p.id);
+      if (p.occasion && p.occasion.length > 0) {
+        const occs = p.occasion.map(o => ({ product_id: p.id, occasion_id: o.toLowerCase() }));
+        await supabase.from('product_occasions').insert(occs);
+      }
+      setProducts(prev => prev.map(item => item.id === p.id ? p : item));
+      await addLog('product', `Producto actualizado: ${p.name}`, 'Sistema');
+    } catch (err: any) {
+      console.error("Error updating product:", err);
+      alert(`Error al actualizar producto: ${err.message}`);
     }
   };
 
   const deleteProduct = async (id: number | string) => {
-    setProducts(prev => prev.filter(item => item.id !== id));
-    await supabase.from('products').delete().eq('id', id);
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) throw error;
+      setProducts(prev => prev.filter(item => item.id !== id));
+      await addLog('product', `Producto eliminado permanentemente`, 'Sistema');
+    } catch (err: any) {
+      console.error("Error deleting product:", err);
+      alert(`Error al eliminar: ${err.message}`);
+    }
   };
 
   const addOrder = async (o: Omit<Order, 'id' | 'date' | 'status'>) => {
-    const newId = crypto.randomUUID();
-    const date = new Date().toISOString();
-    
-    const newOrder: Order = { ...o, id: newId, date, status: 'Nuevo', stockDeducted: false };
-    setOrders(prev => [newOrder, ...prev]);
-    
-    await supabase.from('orders').insert({
-      id: newId, customer_name: `${o.customer.nombre} ${o.customer.apellido}`.trim(),
-      customer_email: 'aurum@joyeria.com', customer_phone: o.customer.telefono,
-      customer_address: o.customer.direccion, status: 'Nuevo', total: o.total,
-      notes: o.metodoPago, created_at: date, stock_deducted: false
-    });
-    
-    if (o.items.length > 0) {
-      const items = o.items.map(i => ({
-        order_id: newId, product_id: i.productId || i.id, quantity: i.quantity, price_at_time: i.price
-      }));
-      await supabase.from('order_items').insert(items);
+    try {
+      const newId = crypto.randomUUID();
+      const date = new Date().toISOString();
+      
+      const { error } = await supabase.from('orders').insert({
+        id: newId, customer_name: `${o.customer.nombre} ${o.customer.apellido}`.trim(),
+        customer_email: 'aurum@joyeria.com', customer_phone: o.customer.telefono,
+        customer_address: o.customer.direccion, status: 'Nuevo', total: o.total,
+        notes: o.metodoPago, created_at: date, stock_deducted: false
+      });
+
+      if (error) throw error;
+      
+      if (o.items.length > 0) {
+        const items = o.items.map(i => ({
+          order_id: newId, product_id: i.productId || i.id, quantity: i.quantity, price_at_time: i.price
+        }));
+        await supabase.from('order_items').insert(items);
+      }
+
+      const newOrder: Order = { ...o, id: newId, date, status: 'Nuevo', stockDeducted: false };
+      setOrders(prev => [newOrder, ...prev]);
+      await addLog('order', `Nuevo pedido #${newId.slice(-6).toUpperCase()} recibido`, 'Sistema');
+    } catch (err: any) {
+      console.error("Error adding order:", err);
+      alert(`Error al procesar pedido: ${err.message}`);
     }
-    await addLog('order', `Nuevo pedido #${newId.slice(-6).toUpperCase()} recibido`, 'Sistema');
   };
 
   const updateOrderStatus = async (id: string, status: Order['status']) => {
-    const order = orders.find(o => o.id === id);
-    if (!order) return;
+    try {
+      const order = orders.find(o => o.id === id);
+      if (!order) return;
 
-    let updatedOrder = { ...order, status };
+      let updatedOrder = { ...order, status };
 
-    if (status === 'Pagado' && !order.stockDeducted) {
-      const newProducts = [...products];
-      for (const item of order.items) {
-        const productIndex = newProducts.findIndex(p => p.id === (item.id || item.productId));
-        if (productIndex !== -1) {
-          const product = newProducts[productIndex];
-          const newStock = Math.max(0, (product.stock || 0) - item.quantity);
-          newProducts[productIndex] = { ...product, stock: newStock };
-          await supabase.from('products').update({ stock: newStock }).eq('id', product.id);
+      if (status === 'Pagado' && !order.stockDeducted) {
+        const newProducts = [...products];
+        for (const item of order.items) {
+          const productIndex = newProducts.findIndex(p => p.id === (item.id || item.productId));
+          if (productIndex !== -1) {
+            const product = newProducts[productIndex];
+            const newStock = Math.max(0, (product.stock || 0) - item.quantity);
+            newProducts[productIndex] = { ...product, stock: newStock };
+            await supabase.from('products').update({ stock: newStock }).eq('id', product.id);
+          }
         }
+        setProducts(newProducts);
+        updatedOrder.stockDeducted = true;
+        await addLog('inventory', `Descuento automático de stock por pedido #${id.slice(-6).toUpperCase()}`, 'Sistema');
       }
-      setProducts(newProducts);
-      updatedOrder.stockDeducted = true;
-      await addLog('inventory', `Descuento automático de stock por pedido #${id.slice(-6).toUpperCase()}`, 'Sistema');
-    }
 
-    setOrders(prev => prev.map(o => o.id === id ? updatedOrder : o));
-    await supabase.from('orders').update({ 
-      status, 
-      stock_deducted: updatedOrder.stockDeducted 
-    }).eq('id', id);
-  };
+      const { error } = await supabase.from('orders').update({ 
+        status, 
+        stock_deducted: updatedOrder.stockDeducted 
+      }).eq('id', id);
+
+      if (error) throw error;
+
+      setOrders(prev => prev.map(o => o.id === id ? updatedOrder : o));
+    } catch (err: any) {
+      console.error("Error updating order status:", err);
+      alert(`Error al actualizar estado: ${err.message}`);
+    }
+  };;
 
   const updateSiteConfig = async (config: SiteConfig) => {
     setSiteConfig(config);
