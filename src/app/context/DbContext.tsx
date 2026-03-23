@@ -161,7 +161,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   // WRITES TO SUPABASE (and local state optimism)
   
   const addLog = async (type: ActivityLog['type'], message: string, userName: string) => {
-    const finalUserName = siteConfig.adminName || userName;
+    const defaultName = userName.includes('@') ? userName.split('@')[0] : userName;
+    const finalUserName = siteConfig.adminName || defaultName;
     const newId = crypto.randomUUID();
     const date = new Date().toISOString();
     const newLog: ActivityLog = { id: newId, type, message, userName: finalUserName, date };

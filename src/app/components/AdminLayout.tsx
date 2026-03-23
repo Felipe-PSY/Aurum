@@ -64,9 +64,10 @@ export function AdminLayout() {
 
   activityLogs.forEach(log => {
     const isRead = clearedNotifs.includes(log.id);
+    const displayUserName = log.userName.includes('@') ? log.userName.split('@')[0] : log.userName;
     dynamicNotifs.push({
       id: log.id,
-      title: `${log.userName} ${log.message}`, // message already contains the action verb
+      title: `${displayUserName} ${log.message}`, // message already contains the action verb
       time: new Date(log.date).toLocaleString(),
       unread: !isRead,
       dateMs: new Date(log.date).getTime()
@@ -265,16 +266,22 @@ export function AdminLayout() {
                        onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
                      />
                    ) : (
-                     <p 
-                       className="text-xs font-bold text-white tracking-wide cursor-pointer hover:text-brand-accent transition-colors"
-                       onClick={() => setIsEditingName(true)}
-                       title="Haz clic para editar nombre"
-                     >
+                     <p className="text-xs font-bold text-white tracking-wide">
                        {siteConfig.adminName || user?.email?.split('@')[0] || 'Admin'}
                      </p>
                    )}
                 </div>
-                <p className="text-[9px] text-brand-accent uppercase tracking-widest mt-0.5">Super administrador</p>
+                <div className="flex flex-col items-end">
+                  <p className="text-[9px] text-brand-accent uppercase tracking-widest mt-0.5">Super administrador</p>
+                  {!isEditingName && (
+                    <button 
+                      onClick={() => setIsEditingName(true)}
+                      className="text-[8px] text-white/20 hover:text-brand-accent uppercase tracking-widest mt-1 transition-colors"
+                    >
+                      Modificar nombre de usuario
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="w-10 h-10 rounded-full bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center font-['Cormorant_Garamond'] text-brand-accent text-xl italic font-bold uppercase overflow-hidden">
                 {isEditingName ? (
