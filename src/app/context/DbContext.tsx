@@ -30,14 +30,27 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Config
-        const { data: configData } = await supabase.from('site_config').select('data').eq('id', 1).single();
+        const [
+          { data: configData },
+          { data: catData },
+          { data: occData },
+          { data: prodData },
+          { data: ordersData },
+          { data: testData },
+          { data: logsData }
+        ] = await Promise.all([
+          supabase.from('site_config').select('data').eq('id', 1).single(),
+          supabase.from('categories').select('*').order('order_index'),
+          supabase.from('occasions').select('*'),
+          supabase.from('products').select('*, product_occasions(occasion_id)'),
+          supabase.from('orders').select('*, order_items(*, products(name))').order('created_at', { ascending: false }),
+          supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
+          supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100)
+        ]);
+
         if (configData) setSiteConfig(configData.data as SiteConfig);
 
         // 2. Categories & Subcategories
-        const { data: catData } = await supabase.from('categories').select('*').order('order_index');
-        const { data: occData } = await supabase.from('occasions').select('*');
-        
         let mappedCats: Category[] = catData?.map((c: any) => ({
           id: c.id,
           name: c.name,
@@ -66,7 +79,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         setCategories(mappedCats);
 
         // 3. Products
-        const { data: prodData } = await supabase.from('products').select('*, product_occasions(occasion_id)');
         if (prodData) {
           const mappedProd: Product[] = prodData.map((p: any) => ({
             id: p.id,
@@ -87,7 +99,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         }
 
         // 4. Orders
-        const { data: ordersData } = await supabase.from('orders').select('*, order_items(*, products(name))').order('created_at', { ascending: false });
         if (ordersData) {
            const mappedOrders: Order[] = ordersData.map((o: any) => {
              const nameParts = o.customer_name ? o.customer_name.split(' ') : [''];
@@ -115,7 +126,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         }
 
         // 5. Testimonials
-        const { data: testData } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
         if (testData) {
            setTestimonials(testData.map((t: any) => ({
              id: t.id,
@@ -129,7 +139,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         }
 
         // 6. Activity Logs
-        const { data: logsData } = await supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100);
         if (logsData) {
           setActivityLogs(logsData.map((l: any) => ({
             id: l.id,
@@ -149,6 +158,90 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     fetchData();
   }, []);
+
+  // REALTIME SUBSCRIPTIONS
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const channel = supabase.channel('aurum-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async (payload) => {
+        if (payload.eventType === 'DELETE') {
+          setProducts(prev => prev.filter(p => p.id !== payload.old.id));
+        } else {
+          const { data } = await supabase.from('products').select('*, product_occasions(occasion_id)').eq('id', payload.new.id).single();
+          if (data) {
+            const mapped: Product = {
+              id: data.id, code: data.code, name: data.name, description: data.description,
+              price: Number(data.price), previousPrice: data.previous_price ? Number(data.previous_price) : undefined,
+              gender: data.gender as any, image: data.image, category: data.category, subCategory: data.sub_category,
+              isFeatured: data.is_featured, stock: data.stock, occasion: data.product_occasions?.map((po: any) => po.occasion_id) || []
+            };
+            setProducts(prev => {
+              if (payload.eventType === 'INSERT') {
+                return prev.some(p => p.id === mapped.id) ? prev : [...prev, mapped];
+              }
+              return prev.map(p => p.id === mapped.id ? mapped : p);
+            });
+          }
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async (payload) => {
+        if (payload.eventType === 'DELETE') {
+          setOrders(prev => prev.filter(o => o.id !== payload.old.id));
+        } else {
+          const { data } = await supabase.from('orders').select('*, order_items(*, products(name))').eq('id', payload.new.id).single();
+          if (data) {
+            const nameParts = data.customer_name ? data.customer_name.split(' ') : [''];
+            const mapped: Order = {
+              id: data.id, date: data.created_at, status: data.status as any, stockDeducted: data.stock_deducted || false,
+              total: Number(data.total), customer: { nombre: nameParts[0] || '', apellido: nameParts.slice(1).join(' ') || '', telefono: data.customer_phone || '', direccion: data.customer_address || '' },
+              metodoPago: data.notes || 'Transferencia',
+              items: data.order_items.map((oi: any) => ({ productId: oi.product_id, name: oi.products?.name || 'Agregado', quantity: oi.quantity, price: Number(oi.price_at_time) }))
+            };
+            setOrders(prev => {
+              if (payload.eventType === 'INSERT') {
+                return prev.some(o => o.id === mapped.id) ? prev : [mapped, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+              }
+              return prev.map(o => o.id === mapped.id ? mapped : o);
+            });
+          }
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, async () => {
+         const { data: catData } = await supabase.from('categories').select('*').order('order_index');
+         if (catData) {
+            setCategories(prev => {
+               const newCats: Category[] = catData.map((c: any) => ({ id: c.id, name: c.name, isActive: c.is_active, subCategories: c.sub_categories || [] }));
+               const occ = prev.find(p => p.id === 'ocasiones');
+               if (occ) newCats.push(occ);
+               return newCats;
+            });
+         }
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, (payload) => {
+         const l = payload.new;
+         const mapped: ActivityLog = { id: l.id, type: l.type as any, message: l.message, userName: l.user_name, date: l.created_at };
+         setActivityLogs(prev => prev.some(log => log.id === mapped.id) ? prev : [mapped, ...prev].slice(0, 100));
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_config' }, (payload) => {
+         if (payload.new.id === 1) setSiteConfig(payload.new.data as SiteConfig);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'testimonials' }, (payload) => {
+         if (payload.eventType === 'DELETE') {
+            setTestimonials(prev => prev.filter(t => t.id !== payload.old.id));
+         } else {
+            const t = payload.new;
+            const mapped: Testimonial = { id: t.id, name: t.author, title: t.role, text: t.content, rating: t.rating, isVisible: t.is_approved, date: t.created_at };
+            setTestimonials(prev => {
+               if (payload.eventType === 'INSERT') return prev.some(test => test.id === mapped.id) ? prev : [mapped, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+               return prev.map(test => test.id === mapped.id ? mapped : test);
+            });
+         }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isInitialized]);
 
   // Sync colors
   useEffect(() => {
@@ -431,14 +524,19 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   const canUndoPriceAdjustment = products.some(p => p.previousPrice !== null && p.previousPrice !== undefined);
 
+  const contextValue = React.useMemo(() => ({
+    products, categories, orders, siteConfig, activityLogs, testimonials,
+    addProduct, updateProduct, deleteProduct, 
+    addOrder, updateOrderStatus, updateSiteConfig, updateCategories,
+    updateAllPrices, undoLastPriceAdjustment, canUndoPriceAdjustment,
+    addLog, addTestimonial, updateTestimonial, deleteTestimonial 
+  }), [
+    products, categories, orders, siteConfig, activityLogs, testimonials,
+    canUndoPriceAdjustment
+  ]);
+
   return (
-    <DbContext.Provider value={{ 
-      products, categories, orders, siteConfig, activityLogs, testimonials,
-      addProduct, updateProduct, deleteProduct, 
-      addOrder, updateOrderStatus, updateSiteConfig, updateCategories,
-      updateAllPrices, undoLastPriceAdjustment, canUndoPriceAdjustment,
-      addLog, addTestimonial, updateTestimonial, deleteTestimonial 
-    }}>
+    <DbContext.Provider value={contextValue}>
       {isInitialized ? children : null}
     </DbContext.Provider>
   );

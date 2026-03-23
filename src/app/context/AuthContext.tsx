@@ -29,7 +29,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (credentials: { user: string; pass: string }) => {
+  const login = React.useCallback(async (credentials: { user: string; pass: string }) => {
     // Si el usuario no escribe un email, asumimos el del administrador principal
     const email = credentials.user.includes('@') ? credentials.user : 'aurumj20@gmail.com';
     
@@ -42,14 +42,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       return false;
     }
-  };
+  }, []);
 
-  const logout = async () => {
+  const logout = React.useCallback(async () => {
     await supabase.auth.signOut();
-  };
+  }, []);
+
+  const isAuthenticated = !!user;
+
+  const contextValue = React.useMemo(() => ({
+    user, login, logout, isAuthenticated, loading
+  }), [user, login, logout, isAuthenticated, loading]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, loading }}>
+    <AuthContext.Provider value={contextValue}>
       {!loading && children}
     </AuthContext.Provider>
   );

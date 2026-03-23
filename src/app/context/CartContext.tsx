@@ -27,7 +27,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('aurum-cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = React.useCallback((product: Product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       if (existingItem) {
@@ -37,13 +37,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...prevCart, { ...product, quantity: 1 }];
     });
-  };
+  }, []);
 
-  const removeFromCart = (productId: number | string) => {
+  const removeFromCart = React.useCallback((productId: number | string) => {
     setCart(prevCart => prevCart.filter(item => item.id !== productId));
-  };
+  }, []);
 
-  const updateQuantity = (productId: number | string, delta: number) => {
+  const updateQuantity = React.useCallback((productId: number | string, delta: number) => {
     setCart(prevCart => {
       const updatedCart = prevCart.map(item =>
         item.id === productId
@@ -52,17 +52,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       );
       return updatedCart.filter(item => item.quantity > 0);
     });
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = React.useCallback(() => {
     setCart([]);
-  };
+  }, []);
 
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
 
+  const contextValue = React.useMemo(() => ({
+    cart, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, totalPrice
+  }), [cart, cartCount, totalPrice, addToCart, removeFromCart, updateQuantity, clearCart]);
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, totalPrice }}>
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );
