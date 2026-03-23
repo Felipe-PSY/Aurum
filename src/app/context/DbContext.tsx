@@ -19,6 +19,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [hasMoreProducts, setHasMoreProducts] = useState(true);
+  const [hasMoreOrders, setHasMoreOrders] = useState(true);
+  const PAGE_SIZE = 20;
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({
     address: '', whatsappNumber: '', colors: { primary: '', secondary: '', accent: '' },
     contactEmail: '', instagram: '', businessHours: '', adminName: '', 
@@ -42,8 +45,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           supabase.from('site_config').select('data').eq('id', 1).single(),
           supabase.from('categories').select('*').order('order_index'),
           supabase.from('occasions').select('*'),
-          supabase.from('products').select('*, product_occasions(occasion_id)'),
-          supabase.from('orders').select('*, order_items(*, products(name))').order('created_at', { ascending: false }),
+          supabase.from('products').select('*, product_occasions(occasion_id)').limit(PAGE_SIZE),
+          supabase.from('orders').select('*, order_items(*, products(name))').order('created_at', { ascending: false }).limit(PAGE_SIZE),
           supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
           supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100)
         ]);
@@ -149,6 +152,10 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           })));
         }
 
+        // Set pagination flags
+        if (prodData && prodData.length < PAGE_SIZE) setHasMoreProducts(false);
+        if (ordersData && ordersData.length < PAGE_SIZE) setHasMoreOrders(false);
+
       } catch (err) {
         console.error("Error fetching data from Supabase:", err);
       } finally {
@@ -158,6 +165,47 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     fetchData();
   }, []);
+
+  const loadMoreProducts = async () => {
+    if (!hasMoreProducts) return;
+    const { data } = await supabase
+      .from('products')
+      .select('*, product_occasions(occasion_id)')
+      .range(products.length, products.length + PAGE_SIZE - 1);
+    
+    if (data) {
+      const mapped: Product[] = data.map((p: any) => ({
+        id: p.id, code: p.code, name: p.name, description: p.description,
+        price: Number(p.price), previousPrice: p.previous_price ? Number(p.previous_price) : undefined,
+        gender: p.gender as any, image: p.image, category: p.category, subCategory: p.sub_category,
+        isFeatured: p.is_featured, stock: p.stock, occasion: p.product_occasions?.map((po: any) => po.occasion_id) || []
+      }));
+      setProducts(prev => [...prev, ...mapped]);
+      if (data.length < PAGE_SIZE) setHasMoreProducts(false);
+    }
+  };
+
+  const loadMoreOrders = async () => {
+    if (!hasMoreOrders) return;
+    const { data } = await supabase
+      .from('orders')
+      .select('*, order_items(*, products(name))')
+      .order('created_at', { ascending: false })
+      .range(orders.length, orders.length + PAGE_SIZE - 1);
+    
+    if (data) {
+       const mapped: Order[] = data.map((o: any) => {
+         const nameParts = o.customer_name ? o.customer_name.split(' ') : [''];
+         return {
+         id: o.id, date: o.created_at, status: o.status as any, stockDeducted: o.stock_deducted || false,
+         total: Number(o.total), customer: { nombre: nameParts[0] || '', apellido: nameParts.slice(1).join(' ') || '', telefono: o.customer_phone || '', direccion: o.customer_address || '' },
+         metodoPago: o.notes || 'Transferencia',
+         items: o.order_items.map((oi: any) => ({ productId: oi.product_id, name: oi.products?.name || 'Agregado', quantity: oi.quantity, price: Number(oi.price_at_time) }))
+       }});
+       setOrders(prev => [...prev, ...mapped]);
+       if (data.length < PAGE_SIZE) setHasMoreOrders(false);
+    }
+  };
 
   // REALTIME SUBSCRIPTIONS
   useEffect(() => {
@@ -323,15 +371,15 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     }
   };
 
-  const deleteProduct = async (id: number | string) => {
+  const deleteProduct = async (id: string): Promise<boolean> => {
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
-      setProducts(prev => prev.filter(item => item.id !== id));
-      await addLog('product', `Producto eliminado permanentemente`, 'Sistema');
-    } catch (err: any) {
+      setProducts(prev => prev.filter(p => p.id !== id));
+      return true;
+    } catch (err) {
       console.error("Error deleting product:", err);
-      // alert removed
+      return false;
     }
   };
 
@@ -480,7 +528,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     } catch (err: any) {
       console.error("Error sincronización:", err);
       setCategories(oldCats);
-      alert(`⚠️ ERROR DE PERSISTENCIA: ${err.message || 'Error en Supabase'}.`);
+      console.error(`ERROR DE PERSISTENCIA: ${err.message || 'Error en Supabase'}.`);
     }
   };
 
@@ -537,13 +585,52 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const canUndoPriceAdjustment = products.some(p => p.previousPrice !== null && p.previousPrice !== undefined);
 
   const contextValue = React.useMemo(() => ({
-    products, categories, orders, siteConfig, activityLogs, testimonials,
-    addProduct, updateProduct, deleteProduct, 
-    addOrder, updateOrderStatus, deleteOrder, updateSiteConfig, updateCategories,
-    updateAllPrices, undoLastPriceAdjustment, canUndoPriceAdjustment,
-    addLog, addTestimonial, updateTestimonial, deleteTestimonial 
+    products, 
+    categories, 
+    orders, 
+    siteConfig, 
+    activityLogs, 
+    testimonials,
+    isInitialized,
+    updateProduct,
+    addProduct,
+    deleteProduct,
+    updateCategories,
+    addOrder,
+    updateOrderStatus,
+    deleteOrder,
+    updateSiteConfig,
+    updateAllPrices,
+    undoLastPriceAdjustment,
+    canUndoPriceAdjustment,
+    addLog,
+    addTestimonial,
+    updateTestimonial,
+    deleteTestimonial,
+    hasMoreProducts,
+    hasMoreOrders,
+    loadMoreProducts,
+    loadMoreOrders
   }), [
-    products, categories, orders, siteConfig, activityLogs, testimonials,
+    products, 
+    categories, 
+    orders, 
+    activityLogs, 
+    siteConfig, 
+    testimonials, 
+    isInitialized, 
+    updateProduct, 
+    addProduct, 
+    deleteProduct, 
+    updateCategories, 
+    addOrder, 
+    updateOrderStatus, 
+    updateSiteConfig,
+    deleteOrder,
+    hasMoreProducts,
+    hasMoreOrders,
+    loadMoreProducts,
+    loadMoreOrders,
     canUndoPriceAdjustment
   ]);
 

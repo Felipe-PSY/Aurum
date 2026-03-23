@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from 'react';
 import { useDb } from '../context/DbContext';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Plus,
@@ -20,8 +21,9 @@ import { Product } from '../types';
 import { CustomDropdown } from '../components/CustomDropdown';
 
 export function AdminProductsPage() {
-  const { products, addProduct, updateProduct, deleteProduct, categories, addLog } = useDb();
+   const { products, addProduct, updateProduct, deleteProduct, categories, addLog } = useDb();
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   // Search & Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,7 +39,7 @@ export function AdminProductsPage() {
     console.log('AdminProductsPage: handleBulkPriceUpdate called');
     const value = parseFloat(adjustmentPercentage);
     if (isNaN(value)) {
-      alert('Por favor ingressa un número válido.');
+      showToast('Por favor ingresa un número válido.', 'warning');
       return;
     }
 
@@ -46,7 +48,7 @@ export function AdminProductsPage() {
       updateAllPrices(value);
       setAdjustmentPercentage('');
       setShowAdjustmentTool(false);
-      alert('Precios actualizados exitosamente.');
+      showToast('Precios actualizados exitosamente en todos los productos.', 'success');
     } else {
       console.log('AdminProductsPage: Confirmation rejected');
     }
@@ -77,7 +79,7 @@ export function AdminProductsPage() {
   const handleDelete = (id: number | string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.')) {
       const p = products.find(prod => prod.id === id);
-      deleteProduct(id);
+      deleteProduct(id.toString());
       if (p) addLog('product', `Eliminó producto: ${p.name}`, user?.email || 'Admin');
     }
   };

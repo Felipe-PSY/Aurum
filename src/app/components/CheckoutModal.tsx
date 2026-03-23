@@ -5,6 +5,8 @@ import { useDb } from '../context/DbContext';
 import { useCart } from '../context/CartContext';
 import { OrderItem } from '../types';
 import { COLOMBIA_DATA, DEPARTAMENTOS } from '../data/colombia';
+import { useToast } from '../context/ToastContext';
+import { supabase } from '../../lib/supabase';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -30,6 +32,8 @@ export function CheckoutModal({ isOpen, onClose, items, total }: CheckoutModalPr
   const [phoneError, setPhoneError] = useState('');
   const [ciudades, setCiudades] = useState<string[]>([]);
   const { clearCart } = useCart();
+  const { showToast } = useToast();
+  const [isAbandoningTriggered, setIsAbandoningTriggered] = useState(false);
 
   useEffect(() => {
     if (formData.departamento) {
@@ -37,6 +41,30 @@ export function CheckoutModal({ isOpen, onClose, items, total }: CheckoutModalPr
       setFormData(prev => ({ ...prev, ciudad: '' }));
     }
   }, [formData.departamento]);
+
+  // Abandoned Cart Logic
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const timer = setTimeout(async () => {
+      // Logic: If Name and Phone are valid, save as abandoned cart draft
+      if (formData.nombre.length > 3 && formData.telefono.length === 10 && !isAbandoningTriggered) {
+        try {
+          await supabase.from('abandoned_carts').insert({
+            customer_name: `${formData.nombre} ${formData.apellido}`,
+            customer_phone: formData.telefono,
+            items: items,
+            total: total
+          });
+          setIsAbandoningTriggered(true); // Only trigger once per session to avoid duplicates
+        } catch (err) {
+          console.error("Error saving abandoned cart:", err);
+        }
+      }
+    }, 15000); // 15 seconds of inactivity/filling
+
+    return () => clearTimeout(timer);
+  }, [formData.nombre, formData.telefono, isOpen, isAbandoningTriggered, items, total]);
 
   const formattedTotal = new Intl.NumberFormat('es-CO', {
     style: 'currency',
@@ -97,6 +125,7 @@ ${formData.infoAdicional ? `Información adicional: ${formData.infoAdicional}\n`
 
     const whatsappUrl = `https://wa.me/573012636880?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
+    showToast('¡Pedido registrado con éxito! Redirigiendo a WhatsApp...', 'success');
     clearCart();
     onClose();
   };

@@ -9,7 +9,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../components/ui/sheet';
 
 export function CatalogPage() {
-  const { products, categories } = useDb();
+  const { products, categories, hasMoreProducts, loadMoreProducts } = useDb();
   const { param1, param2, param3 } = useParams();
 
   // Extract parsing logic to a reusable function for lazy initialization
@@ -204,18 +204,31 @@ export function CatalogPage() {
           <div className="flex-1">
             <AnimatePresence mode="wait">
               {filteredProducts.length > 0 ? (
-                <motion.div 
-                  key="grid"
-                  className="grid sm:grid-cols-2 xl:grid-cols-3 gap-8"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {filteredProducts.map((product, index) => (
-                    <ProductCard key={product.id} product={product} index={index} />
-                  ))}
-                </motion.div>
+                <div className="space-y-12">
+                  <motion.div 
+                    key="grid"
+                    className="grid sm:grid-cols-2 xl:grid-cols-3 gap-8"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {filteredProducts.map((product, index) => (
+                      <ProductCard key={product.id} product={product} index={index} />
+                    ))}
+                  </motion.div>
+
+                  {hasMoreProducts && (
+                    <div className="flex justify-center pt-8">
+                      <button 
+                        onClick={loadMoreProducts}
+                        className="px-12 py-4 border border-white/10 text-white font-['Montserrat'] text-[10px] tracking-[0.3em] uppercase hover:bg-brand-accent hover:text-black hover:border-brand-accent transition-all duration-500"
+                      >
+                        Cargar más piezas
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <motion.div 
                   key="empty"

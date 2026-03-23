@@ -110,9 +110,14 @@ export interface DbContextType {
   siteConfig: SiteConfig;
   activityLogs: ActivityLog[];
   testimonials: Testimonial[];
+  isInitialized: boolean;
+  hasMoreProducts: boolean;
+  hasMoreOrders: boolean;
+  loadMoreProducts: () => Promise<void>;
+  loadMoreOrders: () => Promise<void>;
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
-  deleteProduct: (id: number | string) => void;
+  deleteProduct: (id: string) => Promise<boolean>;
   addOrder: (order: Omit<Order, 'id' | 'date' | 'status'>) => void;
   updateOrderStatus: (id: string, status: Order['status']) => void;
   deleteOrder: (id: string) => void;

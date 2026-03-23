@@ -15,7 +15,7 @@ import { CustomDropdown } from '../components/CustomDropdown';
 import { Order } from '../types';
 
 export function AdminOrdersPage() {
-  const { orders, updateOrderStatus, deleteOrder, addLog } = useDb();
+  const { orders, updateOrderStatus, deleteOrder, addLog, hasMoreOrders, loadMoreOrders } = useDb();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -142,6 +142,17 @@ export function AdminOrdersPage() {
             </tbody>
           </table>
         </div>
+
+        {hasMoreOrders && (
+          <div className="flex justify-center p-8 bg-brand-secondary border-t border-white/5">
+            <button 
+              onClick={loadMoreOrders}
+              className="px-10 py-3 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 font-bold text-[10px] tracking-[0.2em] uppercase transition-all"
+            >
+              Cargar más pedidos
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Order Detail Modal */}
