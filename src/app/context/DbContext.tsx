@@ -94,6 +94,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           const parsed = JSON.parse(savedProducts);
           // Migrate: convert any legacy 'Unisex' gender to 'Mujer'
           // and normalize occasion values to lowercase slugs
+          // Also, remove 'Hombre' and 'Mujer' from subCategory field on existing products
           const OCCASION_SLUG_MAP: Record<string, string> = {
             matrimonio: 'matrimonio', Matrimonio: 'matrimonio',
             compromiso: 'compromiso', Compromiso: 'compromiso',
@@ -102,31 +103,66 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
             quinceanos: 'quinceanos', Quinceanos: 'quinceanos',
             quinceaños: 'quinceanos', Quinceaños: 'quinceanos',
           };
-          const migrated = parsed.map((p: any) => ({
-            ...p,
-            gender: p.gender === 'Unisex' ? 'Mujer' : p.gender,
-            occasion: p.occasion
-              ? p.occasion.map((o: string) => OCCASION_SLUG_MAP[o] ?? o.toLowerCase())
-              : p.occasion,
-          }));
+          const migrated = parsed.map((p: any) => {
+            let updatedSubcategory = p.subCategory;
+            if (updatedSubcategory === 'Hombre' || updatedSubcategory === 'Mujer') {
+              updatedSubcategory = undefined; // Drop it, it's not a valid subcategory anymore
+            }
+            return {
+              ...p,
+              subCategory: updatedSubcategory,
+              gender: p.gender === 'Unisex' ? 'Mujer' : p.gender,
+              occasion: p.occasion
+                ? p.occasion.map((o: string) => OCCASION_SLUG_MAP[o] ?? o.toLowerCase())
+                : p.occasion,
+            };
+          });
           setProducts(migrated);
-        } else setProducts(initialProducts.map(p => ({
-          ...p,
-          stock: p.stock ?? 10,
-          code: p.code ?? `PRD-${p.id.toString().padStart(4, '0')}`
-        })));
+        } else setProducts(initialProducts.map(p => {
+          let updatedSubcategory = p.subCategory;
+          if (updatedSubcategory === 'Hombre' || updatedSubcategory === 'Mujer') {
+            updatedSubcategory = undefined;
+          }
+          return {
+            ...p,
+            subCategory: updatedSubcategory,
+            stock: p.stock ?? 10,
+            code: p.code ?? `PRD-${p.id.toString().padStart(4, '0')}`
+          };
+        }));
 
-        if (savedCategories) setCategories(JSON.parse(savedCategories));
+        if (savedCategories) {
+          const parsed = JSON.parse(savedCategories);
+          let hasOcasiones = false;
+          const migratedCats = parsed.map((c: any) => {
+            if (c.id === 'ocasiones') hasOcasiones = true;
+            return {
+              ...c,
+              subCategories: c.subCategories?.filter((sub: string) => sub !== 'Hombre' && sub !== 'Mujer')
+            };
+          });
+          
+          if (!hasOcasiones) {
+             migratedCats.push({
+               id: 'ocasiones',
+               name: 'Ocasiones',
+               subCategories: ['Matrimonio', 'Compromiso', 'Graduaciones', 'Quinceaños'],
+               isActive: true
+             });
+          }
+          setCategories(migratedCats);
+        }
         else {
           setCategories([
-            { id: 'anillos', name: 'Anillos', subCategories: ['Hombre', 'Mujer', 'Compromiso', 'Sellos'], isActive: true },
-            { id: 'pulseras', name: 'Pulseras', subCategories: ['Hombre', 'Mujer', 'Tejidas', 'Balines'], isActive: true },
-            { id: 'cadenas', name: 'Cadenas', subCategories: ['Hombre', 'Mujer'], isActive: true },
+            { id: 'anillos', name: 'Anillos', subCategories: ['Compromiso', 'Sellos'], isActive: true },
+            { id: 'pulseras', name: 'Pulseras', subCategories: ['Tejidas', 'Balines'], isActive: true },
+            { id: 'cadenas', name: 'Cadenas', subCategories: [], isActive: true },
             { id: 'aretes', name: 'Aretes', subCategories: ['Topos', 'Candongas', 'Aros'], isActive: true },
             { id: 'dijes', name: 'Dijes', isActive: true },
             { id: 'balines', name: 'Balines', isActive: true },
             { id: 'piedras', name: 'Piedras', isActive: true },
-            { id: 'estuches', name: 'Estuches', isActive: true }
+            { id: 'estuches', name: 'Estuches', isActive: true },
+            { id: 'ocasiones', name: 'Ocasiones', subCategories: ['Matrimonio', 'Compromiso', 'Graduaciones', 'Quinceaños'], isActive: true }
           ]);
         }
 

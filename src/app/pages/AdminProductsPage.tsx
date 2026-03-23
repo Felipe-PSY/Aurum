@@ -58,6 +58,7 @@ export function AdminProductsPage() {
   const [imageFile, setImageFile] = useState<string | null>(null);
   const [isFeatured, setIsFeatured] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,6 +89,7 @@ export function AdminProductsPage() {
   const openEdit = (p: Product) => {
     setSelectedProduct(p);
     setSelectedCategory(p.category);
+    setSelectedSubCategory(p.subCategory || '');
     setImageFile(p.image);
     setIsFeatured(!!p.isFeatured);
     setIsModalOpen(true);
@@ -97,6 +99,7 @@ export function AdminProductsPage() {
     setSelectedProduct(null);
     const initialCategory = categories.find(c => c.isActive)?.name || '';
     setSelectedCategory(initialCategory);
+    setSelectedSubCategory('');
     setImageFile(null);
     setIsFeatured(false);
     setIsModalOpen(true);
@@ -451,7 +454,8 @@ export function AdminProductsPage() {
                         <label className="text-[10px] text-white/40 uppercase tracking-widest block">Subcategoría</label>
                         <select
                           name="subCategory"
-                          defaultValue={selectedProduct?.subCategory || ''}
+                          value={selectedSubCategory}
+                          onChange={(e) => setSelectedSubCategory(e.target.value)}
                           className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none transition-all appearance-none"
                         >
                           <option value="" className="bg-brand-primary">Ninguna</option>
@@ -460,17 +464,20 @@ export function AdminProductsPage() {
                           ))}
                         </select>
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] text-white/40 uppercase tracking-widest block">Género</label>
-                        <select
-                          name="gender"
-                          className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none transition-all appearance-none"
-                          defaultValue={selectedProduct?.gender || 'Mujer'}
-                        >
-                          <option className="bg-brand-primary">Mujer</option>
-                          <option className="bg-brand-primary">Hombre</option>
-                        </select>
-                      </div>
+                      {/* Render Gender only if the subcategory is not Matrimonio or Quinceaños */}
+                      {selectedSubCategory !== 'Matrimonio' && selectedSubCategory !== 'Quinceaños' && selectedSubCategory !== 'Quinceanos' && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] text-white/40 uppercase tracking-widest block">Género</label>
+                          <select
+                            name="gender"
+                            className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none transition-all appearance-none"
+                            defaultValue={selectedProduct?.gender || 'Mujer'}
+                          >
+                            <option className="bg-brand-primary">Mujer</option>
+                            <option className="bg-brand-primary">Hombre</option>
+                          </select>
+                        </div>
+                      )}
                       <div className="space-y-2">
                         <label className="text-[10px] text-white/40 uppercase tracking-widest block">Stock Inicial</label>
                         <input

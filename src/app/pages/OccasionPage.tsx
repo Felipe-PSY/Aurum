@@ -29,7 +29,8 @@ const OCCASION_MAP: Record<string, { label: string; description: string }> = {
 };
 
 // Quinceañeros doesn't have a gender filter – all products are feminine
-const OCCASION_NO_GENDER_FILTER = ['quinceanos'];
+// Matrimonio now also shouldn't have a gender filter.
+const OCCASION_NO_GENDER_FILTER = ['quinceanos', 'matrimonio'];
 
 export function OccasionPage() {
   const { slug } = useParams<{ slug: string }>();

@@ -9,16 +9,11 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '../components/ui/sheet';
 
 export function CatalogPage() {
-  const { products } = useDb();
+  const { products, categories } = useDb();
   const { param1, param2, param3 } = useParams();
-  
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000000]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState("relevance");
 
-  // Al cargar, parseamos los parámetros dinámicos
-  const parsedParams = useMemo(() => {
+  // Extract parsing logic to a reusable function for lazy initialization
+  const getParsedParams = () => {
     let gender = null;
     let category = null;
     let subCategory = null;
@@ -33,7 +28,6 @@ export function CatalogPage() {
       subCategory = param2;
     }
 
-    // Si la categoría es "ocasiones", el siguiente param es la ocasión
     if (category === 'ocasiones') {
       occasion = param2;
       category = null;
@@ -41,35 +35,82 @@ export function CatalogPage() {
     }
 
     return { gender, category, subCategory, occasion };
-  }, [param1, param2, param3]);
+  };
 
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000000]);
+  
+  // Initialize state directly from URL params to prevent flashing
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const { category } = getParsedParams();
+    return category ? [category.charAt(0).toUpperCase() + category.slice(1)] : [];
+  });
+  const [selectedGenders, setSelectedGenders] = useState<string[]>(() => {
+    const { gender } = getParsedParams();
+    return gender ? [gender.charAt(0).toUpperCase() + gender.slice(1)] : [];
+  });
+  const [selectedSubCategories, setSelectedSubCategories] = useState<string[]>(() => {
+    const { subCategory } = getParsedParams();
+    return subCategory ? [subCategory.charAt(0).toUpperCase() + subCategory.slice(1)] : [];
+  });
+  const [sortBy, setSortBy] = useState("relevance");
+
+  // Calculate current params using the helper
+  const parsedParams = useMemo(() => getParsedParams(), [param1, param2, param3]);
   const { gender, category, subCategory, occasion } = parsedParams;
 
-  // Sincronizar filtros del sidebar con la URL
+  // Update states if the path changes (navigation without unmounting)
   useEffect(() => {
     if (category) setSelectedCategories([category.charAt(0).toUpperCase() + category.slice(1)]);
+    else setSelectedCategories([]);
+
     if (gender) setSelectedGenders([gender.charAt(0).toUpperCase() + gender.slice(1)]);
+    else setSelectedGenders([]);
+
+    if (subCategory) setSelectedSubCategories([subCategory.charAt(0).toUpperCase() + subCategory.slice(1)]);
+    else setSelectedSubCategories([]);
     
     window.scrollTo(0, 0);
-  }, [category, gender]);
+  }, [category, gender, subCategory]);
+
+  const availableSubCategories = useMemo(() => {
+    const catsToCheck = category ? [category] : selectedCategories;
+    if (catsToCheck.length > 0) {
+      const subs = new Set<string>();
+      catsToCheck.forEach(catName => {
+        const cat = categories.find(c => c.name.toLowerCase() === catName.toLowerCase());
+        if (cat?.subCategories) {
+          cat.subCategories.forEach(sub => subs.add(sub));
+        }
+      });
+      return Array.from(subs);
+    }
+    return [];
+  }, [category, selectedCategories, categories]);
 
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
-      // Filtro de Género (desde la URL o desde el Sidebar)
+      // Filtro de Género
       if (gender) {
+        // Enforced internally by URL (because filter is hidden)
         const urlGender = gender.charAt(0).toUpperCase() + gender.slice(1);
         if (product.gender !== urlGender) return false;
+      } else {
+        // Controlled by Sidebar
+        if (selectedGenders.length > 0 && !selectedGenders.includes(product.gender)) return false;
       }
-      if (selectedGenders.length > 0 && !selectedGenders.includes(product.gender)) return false;
 
-      // Filtro de Categoría (desde la URL o desde el Sidebar)
-      if (category && product.category.toLowerCase() !== category.toLowerCase()) {
-         if (selectedCategories.length === 0) return false;
+      // Filtro de Categoría
+      if (category) {
+        // Enforced internally by URL (because filter is hidden)
+        if (product.category.toLowerCase() !== category.toLowerCase()) return false;
+      } else {
+        // Controlled by Sidebar
+        if (selectedCategories.length > 0 && !selectedCategories.some(c => c.toLowerCase() === product.category.toLowerCase())) return false;
       }
-      if (selectedCategories.length > 0 && !selectedCategories.some(c => c.toLowerCase() === product.category.toLowerCase())) return false;
 
       // Filtro de Subcategoría
-      if (subCategory && product.subCategory?.toLowerCase() !== subCategory.toLowerCase()) return false;
+      // ALWAYS controlled by UI State (Sidebar is always visible for subcategories)
+      if (selectedSubCategories.length > 0 && (!product.subCategory || !selectedSubCategories.some(s => s.toLowerCase() === product.subCategory!.toLowerCase()))) return false;
 
       // Filtro de Ocasión
       if (occasion && !product.occasion?.some(o => o.toLowerCase() === occasion.toLowerCase())) return false;
@@ -83,7 +124,7 @@ export function CatalogPage() {
       if (sortBy === "price-desc") return b.price - a.price;
       return 0; // Relevancia / Default
     });
-  }, [gender, category, subCategory, occasion, priceRange, selectedCategories, selectedGenders, sortBy]);
+  }, [gender, category, subCategory, occasion, priceRange, selectedCategories, selectedGenders, selectedSubCategories, sortBy]);
 
   const pageTitle = useMemo(() => {
     if (occasion) return `Mesa de ${occasion.charAt(0).toUpperCase() + occasion.slice(1)}`;
@@ -122,6 +163,10 @@ export function CatalogPage() {
               selectedGenders={selectedGenders}
               setSelectedGenders={setSelectedGenders}
               showCategoryFilter={!category}
+              showGenderFilter={!gender}
+              availableSubCategories={availableSubCategories}
+              selectedSubCategories={selectedSubCategories}
+              setSelectedSubCategories={setSelectedSubCategories}
             />
           </aside>
 
@@ -146,6 +191,10 @@ export function CatalogPage() {
                   selectedGenders={selectedGenders}
                   setSelectedGenders={setSelectedGenders}
                   showCategoryFilter={!category}
+                  showGenderFilter={!gender}
+                  availableSubCategories={availableSubCategories}
+                  selectedSubCategories={selectedSubCategories}
+                  setSelectedSubCategories={setSelectedSubCategories}
                 />
               </SheetContent>
             </Sheet>

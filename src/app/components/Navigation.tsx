@@ -28,11 +28,13 @@ export function Navigation() {
     setActiveDropdown(null);
   }, [location.pathname]);
 
-  const dynamicCategories = categories.filter(c => c.isActive).map(c => ({
-    name: c.name,
-    href: `/catalog/${c.id}`,
-    sub: c.subCategories
-  }));
+  const dynamicCategories = categories
+    .filter(c => c.isActive && c.id !== 'ocasiones')
+    .map(c => ({
+      name: c.name,
+      href: `/catalog/${c.id}`,
+      sub: c.subCategories
+    }));
 
   const ocasiones = [
     { name: "Matrimonio", href: "/ocasiones/matrimonio" },

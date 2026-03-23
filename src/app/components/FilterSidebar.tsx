@@ -12,6 +12,9 @@ interface FilterSidebarProps {
   setSelectedGenders: (genders: string[]) => void;
   showCategoryFilter?: boolean;
   showGenderFilter?: boolean;
+  availableSubCategories?: string[];
+  selectedSubCategories?: string[];
+  setSelectedSubCategories?: (subs: string[]) => void;
 }
 
 export function FilterSidebar({
@@ -23,6 +26,9 @@ export function FilterSidebar({
   setSelectedGenders,
   showCategoryFilter = true,
   showGenderFilter = true,
+  availableSubCategories = [],
+  selectedSubCategories = [],
+  setSelectedSubCategories = () => {},
 }: FilterSidebarProps) {
   const categories = ["Anillos", "Pulseras", "Cadenas", "Aretes", "Dijes", "Balines", "Piedras", "Estuches"];
   const genders = ["Hombre", "Mujer"];
@@ -43,6 +49,14 @@ export function FilterSidebar({
     }
   };
 
+  const handleSubCategoryChange = (sub: string) => {
+    if (selectedSubCategories.includes(sub)) {
+      setSelectedSubCategories(selectedSubCategories.filter(s => s !== sub));
+    } else {
+      setSelectedSubCategories([...selectedSubCategories, sub]);
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -52,7 +66,12 @@ export function FilterSidebar({
   };
 
   // Build default open accordion sections
-  const defaultOpen = ["price", ...(showGenderFilter ? ["gender"] : []), ...(showCategoryFilter ? ["category"] : [])];
+  const defaultOpen = [
+    "price", 
+    ...(showGenderFilter ? ["gender"] : []), 
+    ...(showCategoryFilter ? ["category"] : []),
+    ...(availableSubCategories.length > 0 ? ["subcategory"] : [])
+  ];
 
   return (
     <div className="w-full space-y-8 p-6 bg-white/5 border border-white/10 backdrop-blur-md">
@@ -105,6 +124,32 @@ export function FilterSidebar({
           </AccordionItem>
         )}
 
+        {/* Subcategoría – shown only if there are specific subcategories available */}
+        {availableSubCategories.length > 0 && (
+          <AccordionItem value="subcategory" className="border-white/10">
+            <AccordionTrigger className="text-white hover:text-brand-accent font-['Montserrat'] text-sm tracking-widest uppercase">
+              Subcategoría
+            </AccordionTrigger>
+            <AccordionContent className="pt-4 space-y-4">
+              {availableSubCategories.map((sub) => (
+                <div key={sub} className="flex items-center space-x-3 group cursor-pointer" onClick={() => handleSubCategoryChange(sub)}>
+                  <Checkbox 
+                    id={`sub-${sub}`} 
+                    checked={selectedSubCategories.includes(sub)}
+                    className="border-white/20 data-[state=checked]:bg-brand-accent data-[state=checked]:border-brand-accent"
+                  />
+                  <Label 
+                    htmlFor={`sub-${sub}`}
+                    className="text-brand-text group-hover:text-white transition-colors cursor-pointer font-['Montserrat'] font-light"
+                  >
+                    {sub}
+                  </Label>
+                </div>
+              ))}
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
         {/* Categoría – hidden when browsing within a specific category */}
         {showCategoryFilter && (
           <AccordionItem value="category" className="border-white/10">
@@ -137,6 +182,7 @@ export function FilterSidebar({
             setPriceRange([0, 5000000]);
             setSelectedCategories([]);
             setSelectedGenders([]);
+            setSelectedSubCategories([]);
         }}
         className="w-full py-3 text-brand-accent border border-brand-accent/30 hover:bg-brand-accent hover:text-black transition-all duration-300 font-['Montserrat'] text-[10px] tracking-widest uppercase"
       >
