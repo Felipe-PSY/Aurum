@@ -11,9 +11,10 @@ export function AdminLoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login({ user: username, pass: password })) {
+    const success = await login({ user: username, pass: password });
+    if (success) {
       navigate('/admin');
     } else {
       setError('Credenciales incorrectas');

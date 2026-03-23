@@ -1,47 +1,56 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-interface User {
-  id: string;
-  name: string;
-  role: 'Super administrador' | 'Vendedor' | 'Editor';
-}
+import { supabase } from '../../lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
-  login: (credentials: { user: string; pass: string }) => boolean;
-  logout: () => void;
+  login: (credentials: { user: string; pass: string }) => Promise<boolean>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('aurum_admin_user');
-    if (savedUser) setUser(JSON.parse(savedUser));
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = (credentials: { user: string; pass: string }) => {
-    // Simulated credentials for demo purposes
-    if (credentials.user === 'admin' && credentials.pass === 'admin') {
-      const loggedUser: User = { id: '1', name: 'Administrador', role: 'Super administrador' };
-      setUser(loggedUser);
-      localStorage.setItem('aurum_admin_user', JSON.stringify(loggedUser));
-      return true;
+  const login = async (credentials: { user: string; pass: string }) => {
+    // Si el usuario no escribe un email, asumimos el del administrador principal
+    const email = credentials.user.includes('@') ? credentials.user : 'aurumj20@gmail.com';
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: credentials.pass,
+      });
+      return !error;
+    } catch {
+      return false;
     }
-    return false;
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('aurum_admin_user');
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
-      {children}
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
