@@ -52,6 +52,8 @@ export function AdminLoginPage() {
                 type="email"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
+                maxLength={255}
+                autoComplete="email"
                 className="w-full bg-white/5 border border-white/10 p-4 text-white text-sm focus:border-brand-accent outline-none transition-colors"
                 placeholder="admin@ejemplo.com"
               />
@@ -66,6 +68,8 @@ export function AdminLoginPage() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
+                maxLength={100}
+                autoComplete="current-password"
                 className="w-full bg-white/5 border border-white/10 p-4 text-white text-sm focus:border-brand-accent outline-none transition-colors"
                 placeholder="••••••••"
               />
