@@ -174,3 +174,15 @@ CREATE POLICY "Admin All Orders" ON public.orders FOR ALL USING (auth.role() = '
 CREATE POLICY "Admin All OrderItems" ON public.order_items FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admin All Testimonials" ON public.testimonials FOR ALL USING (auth.role() = 'authenticated');
 CREATE POLICY "Admin All SiteConfig" ON public.site_config FOR ALL USING (auth.role() = 'authenticated');
+
+-- ==========================================
+-- 4. HABILITAR TIEMPO REAL (REALTIME)
+-- ==========================================
+-- Esto es obligatorio para que los pedidos y cambios se reflejen sin recargar la página.
+ALTER PUBLICATION supabase_realtime ADD TABLE 
+    public.products, 
+    public.orders, 
+    public.categories, 
+    public.activity_logs, 
+    public.site_config, 
+    public.testimonials;
