@@ -106,8 +106,13 @@ export function ProductDetailPage() {
               <h1 className="font-['Cormorant_Garamond'] text-6xl text-white mb-4 tracking-wide leading-tight">
                 {product.name}
               </h1>
-              <p className="text-3xl font-['Montserrat'] text-brand-accent tracking-tighter mb-8 font-light italic">
+              <p className="text-3xl font-['Montserrat'] text-brand-accent tracking-tighter mb-8 font-light italic flex items-center gap-4">
                 {formattedPrice}
+                {product.stock !== undefined && product.stock === 0 && (
+                  <span className="text-xs bg-red-500/10 text-red-500 border border-red-500/20 px-3 py-1 uppercase tracking-[0.2em] font-bold not-italic">
+                    Agotado
+                  </span>
+                )}
               </p>
               
               <p className="text-brand-text/60 leading-relaxed text-sm tracking-wide mb-10 max-w-xl">
@@ -132,7 +137,14 @@ export function ProductDetailPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                {!cartItem ? (
+                {product.stock !== undefined && product.stock === 0 ? (
+                  <button 
+                    disabled
+                    className="flex-1 flex items-center justify-center gap-3 py-5 bg-white/5 border border-white/10 text-white/20 font-bold text-xs tracking-[0.2em] uppercase cursor-not-allowed"
+                  >
+                    Producto Agotado
+                  </button>
+                ) : !cartItem ? (
                   <button 
                     onClick={() => addToCart(product)}
                     className="flex-1 flex items-center justify-center gap-3 py-5 bg-white text-black font-bold text-xs tracking-[0.2em] uppercase hover:bg-brand-accent transition-all duration-500"
@@ -159,12 +171,14 @@ export function ProductDetailPage() {
                     </button>
                   </div>
                 )}
-                <button 
-                  onClick={() => setIsCheckoutOpen(true)}
-                  className="flex-1 py-5 bg-brand-accent text-black font-bold text-xs tracking-[0.2em] uppercase hover:bg-white transition-all duration-500"
-                >
-                  Proceder al Pago
-                </button>
+                {product.stock !== undefined && product.stock > 0 && (
+                  <button 
+                    onClick={() => setIsCheckoutOpen(true)}
+                    className="flex-1 py-5 bg-brand-accent text-black font-bold text-xs tracking-[0.2em] uppercase hover:bg-white transition-all duration-500"
+                  >
+                    Proceder al Pago
+                  </button>
+                )}
               </div>
             </div>
 
