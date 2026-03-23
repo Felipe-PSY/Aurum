@@ -21,6 +21,7 @@ import { AdminInventoryPage } from './pages/AdminInventoryPage';
 import { AdminConfigPage } from './pages/AdminConfigPage';
 import { AdminContentPage } from './pages/AdminContentPage';
 import { AdminTestimonialsPage } from '@/app/pages/AdminTestimonialsPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 // Component to protect admin routes
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -66,6 +67,9 @@ export default function App() {
                   <Route path="testimonios" element={<AdminTestimonialsPage />} />
                   <Route path="configuracion" element={<AdminConfigPage />} />
                 </Route>
+
+                {/* Fallback 404 */}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </main>
             {!isAdminRoute && <Footer />}
