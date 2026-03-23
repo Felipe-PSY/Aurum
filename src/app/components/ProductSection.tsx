@@ -111,7 +111,7 @@ export function ProductSection() {
 
               {/* Efecto de brillo */}
               <motion.div
-                className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100"
+                className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none"
                 animate={{
                   x: ['-100%', '200%']
                 }}

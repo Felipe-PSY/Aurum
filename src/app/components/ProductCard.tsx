@@ -43,7 +43,7 @@ export const ProductCard = memo(({ product, index }: ProductCardProps) => {
         </Link>
         
         {/* Botón Añadir a la Bolsa / Controles de Cantidad */}
-        <div className="absolute inset-x-0 bottom-0 p-6 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-500 z-10">
+        <div className="absolute inset-x-0 bottom-0 p-6 lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-500 z-10 pointer-events-none">
           {!cartItem ? (
             <button 
               disabled={isOutOfStock}
@@ -52,13 +52,13 @@ export const ProductCard = memo(({ product, index }: ProductCardProps) => {
                 e.stopPropagation();
                 if (!isOutOfStock) addToCart(product);
               }}
-              className={`w-full flex items-center justify-center gap-2 py-4 ${isOutOfStock ? 'bg-white/10 text-white/40 cursor-not-allowed' : 'bg-brand-accent text-black hover:bg-white'} font-['Montserrat'] text-[10px] tracking-[0.2em] uppercase transition-all duration-300 font-bold shadow-2xl`}
+              className={`w-full flex items-center justify-center gap-2 py-4 ${isOutOfStock ? 'bg-white/10 text-white/40 cursor-not-allowed' : 'bg-brand-accent text-black hover:bg-white'} font-['Montserrat'] text-[10px] tracking-[0.2em] uppercase transition-all duration-300 font-bold shadow-2xl pointer-events-auto`}
             >
               <ShoppingBag className="w-4 h-4" />
               {isOutOfStock ? 'Agotado' : 'Añadir a la Bolsa'}
             </button>
           ) : (
-            <div className="flex items-center bg-black/60 backdrop-blur-md border border-white/10 overflow-hidden shadow-2xl">
+            <div className="flex items-center bg-black/60 backdrop-blur-md border border-white/10 overflow-hidden shadow-2xl pointer-events-auto">
               <button 
                 onClick={(e) => {
                   e.preventDefault();
