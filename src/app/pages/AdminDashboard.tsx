@@ -1,23 +1,23 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'motion/react';
-import { 
-  TrendingUp, 
-  ShoppingBag, 
-  Package, 
-  Users, 
-  ArrowUpRight, 
+import {
+  TrendingUp,
+  ShoppingBag,
+  Package,
+  Users,
+  ArrowUpRight,
   ArrowDownRight,
   Clock
 } from 'lucide-react';
 import { CustomDropdown } from '../components/CustomDropdown';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer
 } from 'recharts';
 import { useDb } from '../context/DbContext';
@@ -37,12 +37,12 @@ export function AdminDashboard() {
   const totalSales = orders
     .filter(o => o.status === 'Pagado' || o.status === 'Entregado')
     .reduce((sum, o) => sum + o.total, 0);
-  
+
   const today = new Date().toISOString().split('T')[0];
   const ordersToday = orders.filter(o => o.date.startsWith(today)).length;
-  
+
   const activeProducts = products.filter(p => (p.stock || 0) > 0).length;
-  
+
   const uniqueCustomers = new Set(orders.map(o => o.customer?.telefono)).size;
 
   const stats = [
@@ -62,7 +62,7 @@ export function AdminDashboard() {
       const sales = dayOrders
         .filter(o => o.status === 'Pagado' || o.status === 'Entregado')
         .reduce((sum, o) => sum + o.total, 0);
-      const label = timeFilter <= 7 ? d.toLocaleDateString('es-CO', { weekday: 'short' }) : `${d.getDate()}/${d.getMonth()+1}`;
+      const label = timeFilter <= 7 ? d.toLocaleDateString('es-CO', { weekday: 'short' }) : `${d.getDate()}/${d.getMonth() + 1}`;
       return { name: label, sales, orders: dayOrders.length };
     });
   }, [orders, timeFilter]);
@@ -84,7 +84,7 @@ export function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
-          <motion.div 
+          <motion.div
             key={stat.name}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -130,27 +130,27 @@ export function AdminDashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="rgba(255,255,255,0.3)" 
-                  fontSize={10} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="name"
+                  stroke="rgba(255,255,255,0.3)"
+                  fontSize={10}
+                  tickLine={false}
                   axisLine={false}
                   dy={10}
                 />
-                <YAxis 
-                  stroke="rgba(255,255,255,0.3)" 
-                  fontSize={10} 
-                  tickLine={false} 
+                <YAxis
+                  stroke="rgba(255,255,255,0.3)"
+                  fontSize={10}
+                  tickLine={false}
                   axisLine={false}
-                  tickFormatter={(value) => value >= 1000000 ? `$${(value/1000000).toFixed(1)}M` : `$${value}`}
+                  tickFormatter={(value) => value >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` : `$${value}`}
                 />
-                <Tooltip 
+                <Tooltip
                   formatter={(value: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(value)}
                   contentStyle={{ backgroundColor: '#1A1A1A', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
                   itemStyle={{ color: 'var(--color-accent)', fontSize: '12px' }}
@@ -182,7 +182,7 @@ export function AdminDashboard() {
               </div>
             ))}
           </div>
-          <Link to="/admin/inventario" className="w-full mt-6 py-3 border border-white/10 text-[9px] text-brand-accent uppercase tracking-[0.2em] hover:bg-brand-accent hover:text-black transition-all text-center block">
+          <Link to="/jyaurum/inventario" className="w-full mt-6 py-3 border border-white/10 text-[9px] text-brand-accent uppercase tracking-[0.2em] hover:bg-brand-accent hover:text-black transition-all text-center block">
             Ver todo el inventario
           </Link>
         </div>
@@ -192,7 +192,7 @@ export function AdminDashboard() {
       <div className="bg-brand-secondary border border-white/5 shadow-xl overflow-hidden">
         <div className="p-8 border-b border-white/5 flex justify-between items-center">
           <h3 className="font-['Cormorant_Garamond'] text-2xl text-white italic tracking-wide">Pedidos Recientes</h3>
-          <Link to="/admin/pedidos" className="text-[9px] text-brand-accent uppercase tracking-[0.2em] hover:text-white transition-colors">
+          <Link to="/jyaurum/pedidos" className="text-[9px] text-brand-accent uppercase tracking-[0.2em] hover:text-white transition-colors">
             Ver todos los pedidos
           </Link>
         </div>
