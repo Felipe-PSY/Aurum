@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { Toast, ToastType } from '../components/Toast';
+import { Toast, ToastType } from '@/app/components/Toast';
 
 interface ToastMessage {
   id: string;
