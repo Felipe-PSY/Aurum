@@ -86,7 +86,7 @@ export function FilterSidebar({
           <AccordionContent className="pt-4 pb-6 px-1">
             <Slider
               defaultValue={[priceRange[0], priceRange[1]]}
-              max={5000000}
+              max={30000000}
               step={50000}
               onValueChange={(value) => setPriceRange(value as [number, number])}
               className="mb-6"
@@ -179,7 +179,7 @@ export function FilterSidebar({
       
       <button 
         onClick={() => {
-            setPriceRange([0, 5000000]);
+            setPriceRange([0, 30000000]);
             setSelectedCategories([]);
             setSelectedGenders([]);
             setSelectedSubCategories([]);

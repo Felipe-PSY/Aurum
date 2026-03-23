@@ -120,7 +120,7 @@ export function AdminProductsPage() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const newProduct: Product = {
-      id: selectedProduct ? Number(selectedProduct.id) : Date.now(),
+      id: selectedProduct ? selectedProduct.id : Date.now(),
       name: fd.get('name') as string,
       code: fd.get('code') as string,
       price: Number(fd.get('price')),

@@ -37,7 +37,7 @@ export function CatalogPage() {
     return { gender, category, subCategory, occasion };
   };
 
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 30000000]);
   
   // Initialize state directly from URL params to prevent flashing
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
@@ -228,7 +228,7 @@ export function CatalogPage() {
                   <p className="text-white font-['Cormorant_Garamond'] text-2xl italic">No se encontraron piezas que coincidan con los filtros seleccionados.</p>
                   <button 
                     onClick={() => {
-                        setPriceRange([0, 5000000]);
+                        setPriceRange([0, 30000000]);
                         setSelectedCategories([]);
                         setSelectedGenders([]);
                     }}
