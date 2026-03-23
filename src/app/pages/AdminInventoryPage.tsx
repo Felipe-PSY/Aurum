@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
 import { useDb } from '../context/DbContext';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -135,22 +134,18 @@ export function AdminInventoryPage() {
                     </td>
                     <td className="px-8 py-6 text-right">
                       <div className="flex justify-end gap-2">
-                        <motion.button 
-                          whileTap={{ scale: 0.9 }}
-                          whileHover={{ scale: 1.1 }}
+                        <button 
                           onClick={() => updateStock(p.id, -1)}
                           className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-red-400/20 transition-all font-bold"
                         >
                           <Minus className="w-4 h-4" />
-                        </motion.button>
-                        <motion.button 
-                          whileTap={{ scale: 0.9 }}
-                          whileHover={{ scale: 1.1 }}
+                        </button>
+                        <button 
                           onClick={() => updateStock(p.id, 1)}
                           className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-green-400/20 transition-all font-bold"
                         >
                           <Plus className="w-4 h-4" />
-                        </motion.button>
+                        </button>
                       </div>
                     </td>
                   </tr>
