@@ -107,7 +107,7 @@ export function AdminLayout() {
 
   const handleLogout = () => {
     logout();
-    navigate('/admin/login');
+    navigate('/jyaurum/login');
   };
 
   const closeSidebarOnMobile = () => {

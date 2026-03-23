@@ -45,15 +45,15 @@ export function AdminLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] text-brand-accent uppercase tracking-widest flex items-center gap-2">
-                <User className="w-3 h-3" /> Usuario
+                <User className="w-3 h-3" /> Correo Electrónico
               </label>
               <input 
                 required
-                type="text"
+                type="email"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 p-4 text-white text-sm focus:border-brand-accent outline-none transition-colors"
-                placeholder="Ingresa tu usuario"
+                placeholder="admin@ejemplo.com"
               />
             </div>
 

@@ -30,8 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = React.useCallback(async (credentials: { user: string; pass: string }) => {
-    // Si el usuario no escribe un email, asumimos el del administrador principal
-    const email = credentials.user.includes('@') ? credentials.user : 'aurumj20@gmail.com';
+    const email = credentials.user.trim();
     
     try {
       const { error } = await supabase.auth.signInWithPassword({
