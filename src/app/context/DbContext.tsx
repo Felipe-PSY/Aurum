@@ -42,7 +42,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           id: c.id,
           name: c.name,
           isActive: c.is_active,
-          subCategories: [] // We didn't create a real subcategories table in schema, we used raw strings in frontend.
+          subCategories: c.sub_categories || [] 
         })) || [];
         
         // Emulate Occasions as a Category for Admin Panel backwards compatibility
@@ -266,9 +266,67 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   const updateCategories = async (cats: Category[]) => {
-    setCategories(cats);
-    // Para simplificar, Categories DB logic solo se actualizaría via Admin Panel.
-    // La app actual no tiene UI para reordenar categorías per se salvo código fuente.
+    // 1. Identificar si es una eliminación, adición o actualización simple
+    const oldCats = categories;
+    setCategories(cats); // Optimismo
+
+    // Logica de sincronización con DB
+    if (cats.length > oldCats.length) {
+      // ADICIÓN DE CATEGORÍA
+      const newCat = cats.find(c => !oldCats.find(oc => oc.id === c.id));
+      if (newCat) {
+        if (newCat.id !== 'ocasiones') {
+          await supabase.from('categories').insert({
+            id: newCat.id,
+            name: newCat.name,
+            is_active: newCat.isActive,
+            sub_categories: newCat.subCategories,
+            order_index: cats.length
+          });
+          addLog('config', `Nueva categoría creada: ${newCat.name}`, 'Sistema');
+        }
+      }
+    } else if (cats.length < oldCats.length) {
+      // ELIMINACIÓN
+      const deletedCat = oldCats.find(oc => !cats.find(c => c.id === oc.id));
+      if (deletedCat && deletedCat.id !== 'ocasiones') {
+        await supabase.from('categories').delete().eq('id', deletedCat.id);
+        addLog('config', `Categoría eliminada: ${deletedCat.name}`, 'Sistema');
+      }
+    } else {
+      // ACTUALIZACION / ESTADO / SUBCATEGORIAS
+      for (const cat of cats) {
+        const oldCat = oldCats.find(oc => oc.id === cat.id);
+        if (JSON.stringify(cat) !== JSON.stringify(oldCat)) {
+          if (cat.id === 'ocasiones') {
+            // Sincronizar tabla de Occasions si las subcategorías de la categoría virtual cambiaron
+            const oldSubs = oldCat?.subCategories || [];
+            const newSubs = cat.subCategories || [];
+            
+            // Subs nuevas
+            const added = newSubs.filter(s => !oldSubs.includes(s));
+            for (const name of added) {
+               await supabase.from('occasions').insert({
+                 id: name.toLowerCase().replace(/\s+/g, '-'),
+                 name: name
+               });
+            }
+            // Subs borradas
+            const removed = oldSubs.filter(s => !newSubs.includes(s));
+            for (const name of removed) {
+               await supabase.from('occasions').delete().eq('name', name);
+            }
+          } else {
+            // Categoría normal
+            await supabase.from('categories').update({
+              name: cat.name,
+              is_active: cat.isActive,
+              sub_categories: cat.subCategories
+            }).eq('id', cat.id);
+          }
+        }
+      }
+    }
   };
 
   const addTestimonial = async (t: Omit<Testimonial, 'id' | 'date' | 'isVisible'>) => {
