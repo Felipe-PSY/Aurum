@@ -14,7 +14,6 @@ const DbContext = createContext<DbContextType | undefined>(undefined);
 
 export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [previousPrices, setPreviousPrices] = useState<{ id: string | number; price: number }[] | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -95,6 +94,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
              id: o.id,
              date: o.created_at,
              status: o.status as any,
+             stockDeducted: o.stock_deducted || false,
              total: Number(o.total),
              customer: {
                nombre: nameParts[0] || '',
@@ -127,9 +127,17 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
            })));
         }
 
-        // Local Logs (we can keep these local to avoid cluttering DB for now)
-        const savedLogs = localStorage.getItem('aurum_logs');
-        if (savedLogs) setActivityLogs(JSON.parse(savedLogs));
+        // 6. Activity Logs
+        const { data: logsData } = await supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100);
+        if (logsData) {
+          setActivityLogs(logsData.map((l: any) => ({
+            id: l.id,
+            type: l.type as any,
+            message: l.message,
+            userName: l.user_name,
+            date: l.created_at
+          })));
+        }
 
       } catch (err) {
         console.error("Error fetching data from Supabase:", err);
@@ -151,34 +159,27 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   // WRITES TO SUPABASE (and local state optimism)
   
-  const addLog = (type: ActivityLog['type'], message: string, userName: string) => {
-    const newLog: ActivityLog = { id: `log-${Date.now()}`, type, message, userName, date: new Date().toISOString() };
-    setActivityLogs(prev => {
-      const updated = [newLog, ...prev].slice(0, 100);
-      localStorage.setItem('aurum_logs', JSON.stringify(updated));
-      return updated;
+  const addLog = async (type: ActivityLog['type'], message: string, userName: string) => {
+    const newId = crypto.randomUUID();
+    const date = new Date().toISOString();
+    const newLog: ActivityLog = { id: newId, type, message, userName, date };
+    
+    setActivityLogs(prev => [newLog, ...prev].slice(0, 100));
+    
+    await supabase.from('activity_logs').insert({
+      id: newId, type, message, user_name: userName, created_at: date
     });
   };
 
   const addProduct = async (p: Product) => {
     const newId = crypto.randomUUID();
-    const productData = {
-      id: newId,
-      code: p.code,
-      name: p.name,
-      description: p.description,
-      price: p.price,
-      previous_price: p.previousPrice,
-      gender: p.gender,
-      image: p.image,
-      category: p.category,
-      sub_category: p.subCategory,
-      is_featured: p.isFeatured,
-      stock: p.stock
-    };
+    setProducts(prev => [...prev, { ...p, id: newId }]); 
     
-    setProducts(prev => [...prev, { ...p, id: newId }]); // optimism
-    await supabase.from('products').insert(productData);
+    await supabase.from('products').insert({
+      id: newId, code: p.code, name: p.name, description: p.description, price: p.price,
+      previous_price: p.previousPrice, gender: p.gender, image: p.image,
+      category: p.category, sub_category: p.subCategory, is_featured: p.isFeatured, stock: p.stock
+    });
     
     if (p.occasion && p.occasion.length > 0) {
       const occs = p.occasion.map(o => ({ product_id: newId, occasion_id: o.toLowerCase() }));
@@ -188,15 +189,12 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   const updateProduct = async (p: Product) => {
     setProducts(prev => prev.map(item => item.id === p.id ? p : item));
-    
     await supabase.from('products').update({
       code: p.code, name: p.name, description: p.description, price: p.price,
       previous_price: p.previousPrice, gender: p.gender, image: p.image,
-      category: p.category, sub_category: p.subCategory, is_featured: p.isFeatured,
-      stock: p.stock
+      category: p.category, sub_category: p.subCategory, is_featured: p.isFeatured, stock: p.stock
     }).eq('id', p.id);
 
-    // Recrear occasions
     await supabase.from('product_occasions').delete().eq('product_id', p.id);
     if (p.occasion && p.occasion.length > 0) {
       const occs = p.occasion.map(o => ({ product_id: p.id, occasion_id: o.toLowerCase() }));
@@ -212,34 +210,24 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const addOrder = async (o: Omit<Order, 'id' | 'date' | 'status'>) => {
     const newId = crypto.randomUUID();
     const date = new Date().toISOString();
-    const orderData = {
-      id: newId,
-      customer_name: `${o.customer.nombre} ${o.customer.apellido}`.trim(),
-      customer_email: 'correo@ejemplo.com',
-      customer_phone: o.customer.telefono,
-      customer_address: o.customer.direccion,
-      customer_city: '',
-      status: 'Nuevo',
-      total: o.total,
-      notes: o.metodoPago,
-      created_at: date
-    };
-
-    const newOrder: Order = { ...o, id: newId, date, status: 'Nuevo' };
+    
+    const newOrder: Order = { ...o, id: newId, date, status: 'Nuevo', stockDeducted: false };
     setOrders(prev => [newOrder, ...prev]);
     
-    await supabase.from('orders').insert(orderData);
+    await supabase.from('orders').insert({
+      id: newId, customer_name: `${o.customer.nombre} ${o.customer.apellido}`.trim(),
+      customer_email: 'aurum@joyeria.com', customer_phone: o.customer.telefono,
+      customer_address: o.customer.direccion, status: 'Nuevo', total: o.total,
+      notes: o.metodoPago, created_at: date, stock_deducted: false
+    });
     
     if (o.items.length > 0) {
       const items = o.items.map(i => ({
-        order_id: newId,
-        product_id: i.productId || i.id,
-        quantity: i.quantity,
-        price_at_time: i.price
+        order_id: newId, product_id: i.productId || i.id, quantity: i.quantity, price_at_time: i.price
       }));
       await supabase.from('order_items').insert(items);
     }
-    addLog('order', `Nuevo pedido #${newId.slice(-6).toUpperCase()} recibido`, 'Sistema');
+    await addLog('order', `Nuevo pedido #${newId.slice(-6).toUpperCase()} recibido`, 'Sistema');
   };
 
   const updateOrderStatus = async (id: string, status: Order['status']) => {
@@ -248,7 +236,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     let updatedOrder = { ...order, status };
 
-    // Stock deduction
     if (status === 'Pagado' && !order.stockDeducted) {
       const newProducts = [...products];
       for (const item of order.items) {
@@ -262,11 +249,14 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       }
       setProducts(newProducts);
       updatedOrder.stockDeducted = true;
-      addLog('inventory', `Descuento automático de stock por pedido #${id.slice(-6).toUpperCase()}`, 'Sistema');
+      await addLog('inventory', `Descuento automático de stock por pedido #${id.slice(-6).toUpperCase()}`, 'Sistema');
     }
 
     setOrders(prev => prev.map(o => o.id === id ? updatedOrder : o));
-    await supabase.from('orders').update({ status }).eq('id', id);
+    await supabase.from('orders').update({ 
+      status, 
+      stock_deducted: updatedOrder.stockDeducted 
+    }).eq('id', id);
   };
 
   const updateSiteConfig = async (config: SiteConfig) => {
@@ -276,48 +266,38 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   const updateCategories = async (cats: Category[]) => {
     const oldCats = [...categories];
-    setCategories(cats); // Optimismo
+    setCategories(cats);
 
     try {
       if (cats.length > oldCats.length) {
-        // ADICIÓN DE CATEGORÍA
         const newCat = cats.find(c => !oldCats.find(oc => oc.id === c.id));
         if (newCat && newCat.id !== 'ocasiones') {
-          const { error } = await supabase.from('categories').insert({
-            id: newCat.id,
-            name: newCat.name,
-            is_active: newCat.isActive,
-            sub_categories: newCat.subCategories || [],
-            order_index: cats.length
+          await supabase.from('categories').insert({
+            id: newCat.id, name: newCat.name, is_active: newCat.isActive,
+            sub_categories: newCat.subCategories || [], order_index: cats.length
           });
-          if (error) throw error;
-          addLog('config', `Nueva categoría creada: ${newCat.name}`, 'Sistema');
-        }
-      } else if (cats.length < oldCats.length) {
-        // ELIMINACIÓN
-        const deletedCat = oldCats.find(oc => !cats.find(c => c.id === oc.id));
-        if (deletedCat && deletedCat.id !== 'ocasiones') {
-          const { error } = await supabase.from('categories').delete().eq('id', deletedCat.id);
-          if (error) throw error;
-          addLog('config', `Categoría eliminada: ${deletedCat.name}`, 'Sistema');
+          await addLog('config', `Nueva categoría creada: ${newCat.name}`, 'Sistema');
         }
       } 
       
-      // Siempre sincronizar estados y subcategorías para todas las existentes
+      if (cats.length < oldCats.length) {
+        const deletedCat = oldCats.find(oc => !cats.find(c => c.id === oc.id));
+        if (deletedCat && deletedCat.id !== 'ocasiones') {
+          await supabase.from('categories').delete().eq('id', deletedCat.id);
+          await addLog('config', `Categoría eliminada: ${deletedCat.name}`, 'Sistema');
+        }
+      } 
+      
       for (const cat of cats) {
         const oldCat = oldCats.find(oc => oc.id === cat.id);
-        // Comparamos nombre, estado y subcategorías
         const hasChanged = !oldCat || 
-          cat.name !== oldCat.name || 
-          cat.isActive !== oldCat.isActive || 
+          cat.name !== oldCat.name || cat.isActive !== oldCat.isActive || 
           JSON.stringify(cat.subCategories) !== JSON.stringify(oldCat.subCategories);
 
         if (hasChanged) {
           if (cat.id === 'ocasiones') {
             const oldSubs = oldCat?.subCategories || [];
             const newSubs = cat.subCategories || [];
-            
-            // Subs nuevas
             const added = newSubs.filter(s => !oldSubs.includes(s));
             for (const name of added) {
                await supabase.from('occasions').insert({
@@ -325,51 +305,37 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                  name: name
                });
             }
-            // Subs borradas
             const removed = oldSubs.filter(s => !newSubs.includes(s));
             for (const name of removed) {
                await supabase.from('occasions').delete().eq('name', name);
             }
           } else {
-            const { error } = await supabase.from('categories').update({
-              name: cat.name,
-              is_active: cat.isActive,
-              sub_categories: cat.subCategories || []
-            }).eq('id', cat.id);
-            if (error) {
-              console.error("Error updating category:", error);
-              // Si el error es que la columna no existe, avisamos al usuario (silenciosamente en log por ahora)
-              if (error.message.includes('sub_categories')) {
-                addLog('system', 'ERROR: Falta columna sub_categories en base de datos.', 'Admin');
-              }
-              throw error;
+            const { count } = await supabase.from('categories').update({
+              name: cat.name, is_active: cat.isActive, sub_categories: cat.subCategories || []
+            }).eq('id', cat.id).select('*', { count: 'exact' });
+            
+            if (count === 0) {
+              await supabase.from('categories').insert({
+                id: cat.id, name: cat.name, is_active: cat.isActive, sub_categories: cat.subCategories || []
+              });
             }
           }
         }
       }
-    } catch (err) {
-      console.error("Critical error in updateCategories:", err);
-      // Revertir optimismo si falla
+    } catch (err: any) {
+      console.error("Error sincronización:", err);
       setCategories(oldCats);
-      alert("Error al guardar cambios en las categorías. Por favor verifica tu conexión o base de datos.");
+      alert(`⚠️ ERROR DE PERSISTENCIA: ${err.message || 'Error en Supabase'}.`);
     }
   };
 
   const addTestimonial = async (t: Omit<Testimonial, 'id' | 'date' | 'isVisible'>) => {
     const newId = crypto.randomUUID();
     const date = new Date().toISOString();
-    const testData = {
-      id: newId,
-      author: t.name,
-      role: t.title,
-      content: t.text,
-      rating: t.rating,
-      is_approved: true,
-      created_at: date
-    };
-    
     setTestimonials(prev => [{ ...t, id: newId, date, isVisible: true }, ...prev]);
-    await supabase.from('testimonials').insert(testData);
+    await supabase.from('testimonials').insert({
+      id: newId, author: t.name, role: t.title, content: t.text, rating: t.rating, is_approved: true, created_at: date
+    });
   };
 
   const updateTestimonial = async (id: string, updates: Partial<Testimonial>) => {
@@ -380,7 +346,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     if (updates.text !== undefined) testData.content = updates.text;
     if (updates.rating !== undefined) testData.rating = updates.rating;
     if (updates.isVisible !== undefined) testData.is_approved = updates.isVisible;
-    
     await supabase.from('testimonials').update(testData).eq('id', id);
   };
 
@@ -390,39 +355,31 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   const updateAllPrices = async (percentage: number) => {
-    setProducts(prev => {
-      setPreviousPrices(prev.map(p => ({ id: p.id, price: p.price })));
-      const updated = prev.map(p => ({ ...p, price: Math.round(p.price * (1 + percentage / 100)) }));
-      
-      // Batch update the DB (in a real app, do an RPC, but we'll loop safely since product count is small)
-      updated.forEach(async (p) => {
-        await supabase.from('products').update({ price: p.price }).eq('id', p.id);
-      });
-      
-      return updated;
-    });
-    addLog('inventory', `Ajuste global de precios: ${percentage > 0 ? '+' : ''}${percentage}% aplicado`, 'Sistema');
+    const updated = products.map(p => ({ 
+      ...p, previousPrice: p.price, price: Math.round(p.price * (1 + percentage / 100)) 
+    }));
+    setProducts(updated);
+    for (const p of updated) {
+      await supabase.from('products').update({ price: p.price, previous_price: p.previousPrice }).eq('id', p.id);
+    }
+    await addLog('inventory', `Ajuste global de precios: ${percentage > 0 ? '+' : ''}${percentage}% aplicado`, 'Sistema');
   };
 
   const undoLastPriceAdjustment = async () => {
-    if (!previousPrices) return;
-    setProducts(prev => {
-      const updated = prev.map(p => {
-        const saved = previousPrices.find(s => s.id === p.id);
-        return saved ? { ...p, price: saved.price } : p;
-      });
-      
-      updated.forEach(async (p) => {
-        await supabase.from('products').update({ price: p.price }).eq('id', p.id);
-      });
-      
-      return updated;
+    const updated = products.map(p => {
+       if (p.previousPrice !== undefined && p.previousPrice !== null) {
+         return { ...p, price: p.previousPrice, previousPrice: undefined };
+       }
+       return p;
     });
-    addLog('inventory', 'Ajuste global de precios revertido', 'Admin');
-    setPreviousPrices(null);
+    setProducts(updated);
+    for (const p of updated) {
+      await supabase.from('products').update({ price: p.price, previous_price: null }).eq('id', p.id);
+    }
+    await addLog('inventory', 'Ajuste global de precios revertido', 'Admin');
   };
 
-  const canUndoPriceAdjustment = previousPrices !== null;
+  const canUndoPriceAdjustment = products.some(p => p.previousPrice !== null && p.previousPrice !== undefined);
 
   return (
     <DbContext.Provider value={{ 
