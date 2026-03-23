@@ -76,14 +76,14 @@ export function AdminProductsPage() {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.')) {
       const p = products.find(prod => prod.id === id);
       deleteProduct(id);
-      if (p) addLog('product', `Eliminó producto: ${p.name}`, user?.name || 'Admin');
+      if (p) addLog('product', `Eliminó producto: ${p.name}`, user?.email || 'Admin');
     }
   };
 
   const handleDuplicate = (p: Product) => {
     const newProduct = { ...p, name: `${p.name} (Copia)`, id: Date.now(), code: `${p.code}-C` };
     addProduct(newProduct);
-    addLog('product', `Duplicó producto: ${p.name}`, user?.name || 'Admin');
+    addLog('product', `Duplicó producto: ${p.name}`, user?.email || 'Admin');
   };
 
   const openEdit = (p: Product) => {
@@ -97,7 +97,7 @@ export function AdminProductsPage() {
 
   const openCreate = () => {
     setSelectedProduct(null);
-    const initialCategory = categories.find(c => c.isActive)?.name || '';
+    const initialCategory = categories.find(c => c.isActive)?.id || '';
     setSelectedCategory(initialCategory);
     setSelectedSubCategory('');
     setImageFile(null);
@@ -135,10 +135,10 @@ export function AdminProductsPage() {
 
     if (selectedProduct) {
       updateProduct(newProduct);
-      addLog('product', `Actualizó producto: ${newProduct.name}`, user?.name || 'Admin');
+      addLog('product', `Actualizó producto: ${newProduct.name}`, user?.email || 'Admin');
     } else {
       addProduct(newProduct);
-      addLog('product', `Creó producto: ${newProduct.name}`, user?.name || 'Admin');
+      addLog('product', `Creó producto: ${newProduct.name}`, user?.email || 'Admin');
     }
     setIsModalOpen(false);
   };
@@ -446,7 +446,7 @@ export function AdminProductsPage() {
                           className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none transition-all appearance-none"
                         >
                           {categories.filter(c => c.isActive).map(c => (
-                            <option key={c.id} value={c.name} className="bg-brand-primary">{c.name}</option>
+                            <option key={c.id} value={c.id} className="bg-brand-primary">{c.name}</option>
                           ))}
                         </select>
                       </div>
@@ -459,7 +459,7 @@ export function AdminProductsPage() {
                           className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none transition-all appearance-none"
                         >
                           <option value="" className="bg-brand-primary">Ninguna</option>
-                          {categories.find(c => c.name === selectedCategory)?.subCategories?.map(sub => (
+                          {categories.find(c => c.id === selectedCategory)?.subCategories?.map(sub => (
                             <option key={sub} value={sub} className="bg-brand-primary">{sub}</option>
                           ))}
                         </select>
