@@ -29,7 +29,7 @@ export function AdminContentPage() {
 
   const handleSave = () => {
     updateSiteConfig(localConfig);
-    addLog('config', 'Guardó cambios de contenido', user?.name || 'Admin');
+    addLog('config', 'Guardó cambios de contenido', user?.email?.split('@')[0] || 'Admin');
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };

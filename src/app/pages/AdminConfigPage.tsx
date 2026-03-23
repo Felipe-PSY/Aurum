@@ -19,7 +19,7 @@ export function AdminConfigPage() {
 
   const handleSave = () => {
     updateSiteConfig(localConfig);
-    addLog('config', 'Actualizó configuración del sitio', user?.name || 'Admin');
+    addLog('config', 'Actualizó configuración del sitio', user?.email?.split('@')[0] || 'Admin');
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };

@@ -224,11 +224,11 @@ export function AdminLayout() {
 
             <div className="flex items-center gap-4 border-l border-white/10 pl-6 ml-2">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-white tracking-wide">{user?.name}</p>
-                <p className="text-[9px] text-brand-accent uppercase tracking-widest">{user?.role}</p>
+                <p className="text-xs font-bold text-white tracking-wide">{user?.email?.split('@')[0] || 'Admin'}</p>
+                <p className="text-[9px] text-brand-accent uppercase tracking-widest">Super administrador</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center font-['Cormorant_Garamond'] text-brand-accent text-xl italic font-bold">
-                {user?.name.charAt(0)}
+              <div className="w-10 h-10 rounded-full bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center font-['Cormorant_Garamond'] text-brand-accent text-xl italic font-bold uppercase">
+                {(user?.email || 'A').charAt(0)}
               </div>
             </div>
           </div>
