@@ -288,6 +288,12 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   const addProduct = async (p: Product) => {
+    const tempId = `temp-${Date.now()}`;
+    const optimisticProduct = { ...p, id: tempId };
+    
+    // 1. Optimistic Update
+    setProducts(prev => [...prev, optimisticProduct]);
+
     try {
       const { data, error } = await supabase.from('products').insert({
         code: p.code, name: p.name, description: p.description, price: p.price,
@@ -311,16 +317,23 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         if (occError) console.error("Error occasions:", occError);
       }
       
-      setProducts(prev => [...prev, savedProduct]); 
+      // 2. Replace temp with real
+      setProducts(prev => prev.map(item => item.id === tempId ? savedProduct : item));
       await addLog('product', `Nuevo producto creado: ${p.name}`, 'Sistema');
-      // Success alert removed
     } catch (err: any) {
       console.error("Error creating product:", err);
-      // alert removed
+      // 3. Rollback
+      setProducts(prev => prev.filter(item => item.id !== tempId));
     }
   };
 
   const updateProduct = async (p: Product) => {
+    const oldProduct = products.find(item => item.id === p.id);
+    if (!oldProduct) return;
+
+    // 1. Optimistic Update
+    setProducts(prev => prev.map(item => item.id === p.id ? p : item));
+
     try {
       const { error } = await supabase.from('products').update({
         code: p.code, name: p.name, description: p.description, price: p.price,
@@ -335,22 +348,30 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         const occs = p.occasion.map(o => ({ product_id: p.id, occasion_id: o.toLowerCase() }));
         await supabase.from('product_occasions').insert(occs);
       }
-      setProducts(prev => prev.map(item => item.id === p.id ? p : item));
+      
       await addLog('product', `Producto actualizado: ${p.name}`, 'Sistema');
     } catch (err: any) {
       console.error("Error updating product:", err);
-      // alert removed
+      // 2. Rollback
+      setProducts(prev => prev.map(item => item.id === p.id ? oldProduct : item));
     }
   };
 
   const deleteProduct = async (id: string): Promise<boolean> => {
+    const oldProduct = products.find(p => p.id === id);
+    if (!oldProduct) return false;
+
+    // 1. Optimistic Update
+    setProducts(prev => prev.filter(p => p.id !== id));
+
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
-      setProducts(prev => prev.filter(p => p.id !== id));
       return true;
     } catch (err) {
       console.error("Error deleting product:", err);
+      // 2. Rollback
+      setProducts(prev => [...prev, oldProduct]);
       return false;
     }
   };
@@ -398,12 +419,17 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   const updateOrderStatus = async (id: string, status: Order['status']) => {
+    const order = orders.find(o => o.id === id);
+    if (!order) return;
+
+    const oldOrder = { ...order };
+    const oldProducts = [...products];
+    const updatedOrder = { ...order, status };
+
+    // 1. Optimistic Update
+    setOrders(prev => prev.map(o => o.id === id ? updatedOrder : o));
+
     try {
-      const order = orders.find(o => o.id === id);
-      if (!order) return;
-
-      let updatedOrder = { ...order, status };
-
       if (status === 'Pagado' && !order.stockDeducted) {
         const newProducts = [...products];
         for (const item of order.items) {
@@ -426,13 +452,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       }).eq('id', id);
 
       if (error) throw error;
-
-      setOrders(prev => prev.map(o => o.id === id ? updatedOrder : o));
     } catch (err: any) {
       console.error("Error updating order status:", err);
-      // alert removed
+      // 2. Rollback
+      setOrders(prev => prev.map(o => o.id === id ? oldOrder : o));
+      setProducts(oldProducts);
     }
-  };;
+  };
 
   const updateSiteConfig = async (config: SiteConfig) => {
     setSiteConfig(config);
@@ -610,7 +636,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   return (
     <DbContext.Provider value={contextValue}>
-      {isInitialized ? children : null}
+      {children}
     </DbContext.Provider>
   );
 };

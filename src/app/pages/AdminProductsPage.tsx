@@ -156,20 +156,24 @@ export function AdminProductsPage() {
           <p className="text-brand-text/40 text-[10px] tracking-[0.3em] uppercase">Controla tu catálogo completo sin código</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setShowAdjustmentTool(!showAdjustmentTool)}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white/5 text-white/60 border border-white/10 px-4 py-3 sm:px-6 sm:py-4 font-bold text-[9px] sm:text-[10px] tracking-[0.2em] uppercase hover:bg-white/10 transition-all shadow-xl"
           >
             <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-brand-accent" />
             <span>Ajuste Global</span>
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={openCreate}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-brand-accent text-black px-4 py-3 sm:px-6 sm:py-4 font-bold text-[9px] sm:text-[10px] tracking-[0.2em] uppercase hover:bg-white transition-all shadow-xl"
           >
             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
             <span>Nuevo Producto</span>
-          </button>
+          </motion.button>
         </div>
       </div>
 
