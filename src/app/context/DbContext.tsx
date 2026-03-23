@@ -136,6 +136,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
              };
            }));
            if (ordersData.length < PAGE_SIZE) setHasMoreOrders(false);
+           else setHasMoreOrders(true);
         }
 
         if (logsData) {
@@ -151,6 +152,21 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     };
 
     fetchAdminData();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, _session) => {
+      if (event === 'SIGNED_IN') {
+        fetchAdminData();
+      } else if (event === 'SIGNED_OUT') {
+        setOrders([]);
+        setActivityLogs([]);
+        setHasMoreOrders(true);
+        setIsAdminDataLoaded(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [isInitialized]);
 
   // 3. OPTIMIZED REALTIME SUBSCRIPTIONS
