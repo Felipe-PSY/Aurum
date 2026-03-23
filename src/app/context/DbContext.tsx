@@ -56,9 +56,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         let mappedCats: Category[] = catData?.map((c: any) => ({
           id: c.id, name: c.name, isActive: c.is_active, subCategories: c.sub_categories || [] 
         })) || [];
-        
         if (occData && occData.length > 0) {
-          const occSubNames = Array.from(new Set(occData.map((o: any) => o.name)));
+          const occSubNames = Array.from(new Set(occData.map((o: any) => o.name))) as string[];
           const existingOccIdx = mappedCats.findIndex(c => c.id === 'ocasiones');
           if (existingOccIdx !== -1) {
             mappedCats[existingOccIdx].subCategories = occSubNames;
@@ -160,36 +159,46 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     // Critical storefront subscriptions
     const storefrontChannel = supabase.channel('storefront-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async (payload: any) => {
         if (payload.eventType === 'DELETE') {
           setProducts(prev => prev.filter(p => p.id !== payload.old.id));
         } else {
-          const { data } = await supabase.from('products')
-            .select('id, code, name, description, price, previous_price, gender, image, category, sub_category, is_featured, stock, product_occasions(occasion_id)')
-            .eq('id', payload.new.id)
-            .single();
-          if (data) {
+          // Reconstruct base product from payload to avoid fetching the giant image string
+          const newData = payload.new;
+          try {
+            const { data: occData } = await supabase.from('product_occasions')
+              .select('occasion_id')
+              .eq('product_id', newData.id);
+              
             const mapped: Product = {
-              id: data.id, code: data.code, name: data.name, description: data.description,
-              price: Number(data.price), previousPrice: data.previous_price ? Number(data.previous_price) : undefined,
-              gender: data.gender as any, image: data.image, category: data.category, subCategory: data.sub_category,
-              isFeatured: data.is_featured, stock: data.stock, occasion: data.product_occasions?.map((po: any) => po.occasion_id) || []
+              id: newData.id, code: newData.code, name: newData.name, description: newData.description,
+              price: Number(newData.price), previousPrice: newData.previous_price ? Number(newData.previous_price) : undefined,
+              gender: newData.gender as any, image: newData.image, category: newData.category, subCategory: newData.sub_category,
+              isFeatured: newData.is_featured, stock: newData.stock, occasion: occData?.map((po: any) => po.occasion_id) || []
             };
+            
             setProducts(prev => {
-              if (payload.eventType === 'INSERT') return prev.some(p => p.id === mapped.id) ? prev : [...prev, mapped];
-              return prev.map(p => p.id === mapped.id ? mapped : p);
+              if (payload.eventType === 'INSERT') {
+                if (prev.some(p => p.id === mapped.id)) return prev;
+                // De-duplicate any optimistic UI temporary product by matching unique SKU code
+                const filtered = prev.filter(p => p.code !== mapped.code);
+                return [mapped, ...filtered];
+              }
+              return prev.map(p => p.id === mapped.id || p.code === mapped.code ? mapped : p);
             });
+          } catch (e) {
+            console.error("Realtime update error:", e);
           }
         }
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_config' }, (payload) => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_config' }, (payload: any) => {
          if (payload.new.id === 1) setSiteConfig(payload.new.data as SiteConfig);
       })
       .subscribe();
 
     // Admin/Deferred subscriptions (could be initiated only on admin routes)
     const adminChannel = supabase.channel('admin-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async (payload: any) => {
         if (payload.eventType === 'DELETE') {
           setOrders(prev => prev.filter(o => o.id !== payload.old.id));
         } else {
@@ -209,7 +218,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           }
         }
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, (payload: any) => {
          const l = payload.new;
          const mapped: ActivityLog = { id: l.id, type: l.type as any, message: l.message, userName: l.user_name, date: l.created_at };
          setActivityLogs(prev => prev.some(log => log.id === mapped.id) ? prev : [mapped, ...prev].slice(0, 100));
@@ -288,6 +297,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   const addProduct = async (p: Product) => {
+    // Optimistic UI - Add immediately with temporary ID
+    setProducts(prev => [p, ...prev]);
+    
     try {
       const { data, error } = await supabase.from('products').insert({
         code: p.code, name: p.name, description: p.description, price: p.price,
@@ -311,16 +323,24 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         if (occError) console.error("Error occasions:", occError);
       }
       
-      setProducts(prev => [...prev, savedProduct]); 
+      // Update temporary product with actual DB id
+      setProducts(prev => prev.map(item => item.id === p.id ? savedProduct : item)); 
       await addLog('product', `Nuevo producto creado: ${p.name}`, 'Sistema');
-      // Success alert removed
     } catch (err: any) {
       console.error("Error creating product:", err);
-      // alert removed
+      // Revert optimistic insert
+      setProducts(prev => prev.filter(item => item.id !== p.id));
     }
   };
 
   const updateProduct = async (p: Product) => {
+    // Optimistic UI - Update immediately
+    let previousProduct: Product | undefined;
+    setProducts(prev => {
+      previousProduct = prev.find(item => item.id === p.id);
+      return prev.map(item => item.id === p.id ? p : item);
+    });
+
     try {
       const { error } = await supabase.from('products').update({
         code: p.code, name: p.name, description: p.description, price: p.price,
@@ -335,22 +355,34 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         const occs = p.occasion.map(o => ({ product_id: p.id, occasion_id: o.toLowerCase() }));
         await supabase.from('product_occasions').insert(occs);
       }
-      setProducts(prev => prev.map(item => item.id === p.id ? p : item));
       await addLog('product', `Producto actualizado: ${p.name}`, 'Sistema');
     } catch (err: any) {
       console.error("Error updating product:", err);
-      // alert removed
+      // Revert if errors
+      if (previousProduct) {
+        setProducts(prev => prev.map(item => item.id === p.id ? previousProduct! : item));
+      }
     }
   };
 
   const deleteProduct = async (id: string): Promise<boolean> => {
+    // Optimistic UI - Delete immediately
+    let deletedProduct: Product | undefined;
+    setProducts(prev => {
+      deletedProduct = prev.find(p => p.id === id);
+      return prev.filter(p => p.id !== id);
+    });
+    
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
-      setProducts(prev => prev.filter(p => p.id !== id));
       return true;
     } catch (err) {
       console.error("Error deleting product:", err);
+      // Revert if errors
+      if (deletedProduct) {
+        setProducts(prev => [deletedProduct!, ...prev]);
+      }
       return false;
     }
   };
