@@ -197,10 +197,10 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       
       setProducts(prev => [...prev, savedProduct]); 
       await addLog('product', `Nuevo producto creado: ${p.name}`, 'Sistema');
-      alert(`¡Producto guardado exitosamente con ID: ${data.id}!`);
+      // Success alert removed
     } catch (err: any) {
       console.error("Error creating product:", err);
-      alert(`ERROR: ${err.message || 'Error en servidor'}`);
+      // alert removed
     }
   };
 
@@ -223,7 +223,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       await addLog('product', `Producto actualizado: ${p.name}`, 'Sistema');
     } catch (err: any) {
       console.error("Error updating product:", err);
-      alert(`Error al actualizar producto: ${err.message}`);
+      // alert removed
     }
   };
 
@@ -235,7 +235,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       await addLog('product', `Producto eliminado permanentemente`, 'Sistema');
     } catch (err: any) {
       console.error("Error deleting product:", err);
-      alert(`Error al eliminar: ${err.message}`);
+      // alert removed
     }
   };
 
@@ -265,7 +265,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       await addLog('order', `Nuevo pedido #${newId.slice(-6).toUpperCase()} recibido`, 'Sistema');
     } catch (err: any) {
       console.error("Error adding order:", err);
-      alert(`Error al procesar pedido: ${err.message}`);
+      // alert removed
     }
   };
 
@@ -302,7 +302,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       setOrders(prev => prev.map(o => o.id === id ? updatedOrder : o));
     } catch (err: any) {
       console.error("Error updating order status:", err);
-      alert(`Error al actualizar estado: ${err.message}`);
+      // alert removed
     }
   };;
 

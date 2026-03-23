@@ -431,6 +431,7 @@ export function AdminProductsPage() {
                           name="price"
                           type="number"
                           defaultValue={selectedProduct?.price}
+                          onFocus={(e) => { if (e.target.value === '0') e.target.value = ''; }}
                           className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none transition-all"
                         />
                       </div>
@@ -485,6 +486,7 @@ export function AdminProductsPage() {
                           name="stock"
                           type="number"
                           defaultValue={selectedProduct?.stock || 0}
+                          onFocus={(e) => { if (e.target.value === '0') e.target.value = ''; }}
                           className="w-full bg-white/5 border border-white/10 p-4 text-sm text-white focus:border-brand-accent outline-none transition-all"
                         />
                       </div>
