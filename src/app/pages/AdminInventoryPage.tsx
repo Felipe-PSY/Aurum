@@ -31,14 +31,14 @@ export function AdminInventoryPage() {
     return result;
   }, [products, searchTerm, sortDirection]);
 
-  const updateStock = (id: number, delta: number) => {
+  const updateStock = (id: number | string, delta: number) => {
     const product = products.find(p => p.id === id);
     if (!product) return;
     
     const currentStock = product.stock || 0;
     const newStock = Math.max(0, currentStock + delta);
     updateProduct({ ...product, stock: newStock });
-    addLog('inventory', `Ajustó stock de ${product.name} a ${newStock}`, user?.name || 'Admin');
+    addLog('inventory', `Ajustó stock de ${product.name} a ${newStock}`, user?.email?.split('@')[0] || 'Admin');
   };
 
   const totalUnits = products.reduce((acc, p) => acc + (p.stock || 0), 0);
