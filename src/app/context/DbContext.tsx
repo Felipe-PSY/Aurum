@@ -310,11 +310,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                await supabase.from('occasions').delete().eq('name', name);
             }
           } else {
-            const { count } = await supabase.from('categories').update({
+            const { data } = await supabase.from('categories').update({
               name: cat.name, is_active: cat.isActive, sub_categories: cat.subCategories || []
-            }).eq('id', cat.id).select('*', { count: 'exact' });
+            }).eq('id', cat.id).select();
             
-            if (count === 0) {
+            if (!data || data.length === 0) {
               await supabase.from('categories').insert({
                 id: cat.id, name: cat.name, is_active: cat.isActive, sub_categories: cat.subCategories || []
               });
