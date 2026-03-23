@@ -343,7 +343,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       const { error } = await supabase.from('orders').insert({
         id: newId, customer_name: `${o.customer.nombre} ${o.customer.apellido}`.trim(),
         customer_email: 'aurum@joyeria.com', customer_phone: o.customer.telefono,
-        customer_address: o.customer.direccion, status: 'Nuevo', total: o.total,
+        customer_address: o.customer.direccion, status: 'Pendiente', total: o.total,
         notes: o.metodoPago, created_at: date, stock_deducted: false
       });
 
@@ -356,9 +356,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         await supabase.from('order_items').insert(items);
       }
 
-      const newOrder: Order = { ...o, id: newId, date, status: 'Nuevo', stockDeducted: false };
+      const newOrder: Order = { ...o, id: newId, date, status: 'Pendiente', stockDeducted: false };
       setOrders(prev => [newOrder, ...prev]);
-      await addLog('order', `Nuevo pedido #${newId.slice(-6).toUpperCase()} recibido`, 'Sistema');
+      await addLog('order', `Pedido #${newId.slice(-6).toUpperCase()} registrado (Pendiente WA)`, 'Sistema');
     } catch (err: any) {
       console.error("Error adding order:", err);
       // alert removed
