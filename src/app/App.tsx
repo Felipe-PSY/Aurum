@@ -31,7 +31,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminRoute = location.pathname.startsWith('/jyaurum');
 
   return (
     <DbProvider>
@@ -50,8 +50,8 @@ export default function App() {
                 <Route path="/contacto" element={<ContactPage />} />
 
                 {/* Admin Routes */}
-                <Route path="/admin/login" element={<AdminLoginPage />} />
-                <Route path="/admin" element={
+                <Route path="/jyaurum/login" element={<AdminLoginPage />} />
+                <Route path="/jyaurum" element={
                   <ProtectedRoute>
                     <AdminLayout />
                   </ProtectedRoute>

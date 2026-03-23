@@ -87,6 +87,7 @@ export interface SiteConfig {
   contactEmail: string;
   instagram: string;
   businessHours?: string;
+  adminName?: string;
   hero: HeroConfig;
   homeSections: HomeSection[];
   banners: Banner[];

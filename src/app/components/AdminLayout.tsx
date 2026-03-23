@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useDb } from '../context/DbContext';
@@ -17,7 +17,6 @@ import {
   Menu,
   X,
   Bell,
-  Search,
   Sun,
   Moon,
   MessageSquare
@@ -25,12 +24,37 @@ import {
 
 export function AdminLayout() {
   const { user, logout } = useAuth();
-  const { activityLogs } = useDb();
+  const { activityLogs, siteConfig, updateSiteConfig } = useDb();
   const location = useLocation();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isLightMode, setIsLightMode] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [adminNameInput, setAdminNameInput] = useState(siteConfig.adminName || '');
+
+  useEffect(() => {
+    setAdminNameInput(siteConfig.adminName || '');
+  }, [siteConfig.adminName]);
+
+  const handleSaveName = async () => {
+    setIsEditingName(false);
+    if (adminNameInput.trim()) {
+      await updateSiteConfig({ ...siteConfig, adminName: adminNameInput.trim() });
+    }
+  };
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   
   const [clearedNotifs, setClearedNotifs] = useState<string[]>(() => {
     return JSON.parse(localStorage.getItem('aurum_cleared_notifs') || '[]');
@@ -59,16 +83,24 @@ export function AdminLayout() {
     localStorage.setItem('aurum_cleared_notifs', JSON.stringify(newCleared));
   };
 
+  const markAsRead = (id: string) => {
+    if (!clearedNotifs.includes(id)) {
+      const newCleared = [...clearedNotifs, id];
+      setClearedNotifs(newCleared);
+      localStorage.setItem('aurum_cleared_notifs', JSON.stringify(newCleared));
+    }
+  };
+
   const menuItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
-    { name: 'Productos', icon: Package, path: '/admin/productos' },
-    { name: 'Categorías', icon: Tags, path: '/admin/categorias' },
-    { name: 'Pedidos', icon: ShoppingBag, path: '/admin/pedidos' },
-    { name: 'Clientes', icon: Users, path: '/admin/clientes' },
-    { name: 'Inventario', icon: Database, path: '/admin/inventario' },
-    { name: 'Banners / Contenido', icon: ImageIcon, path: '/admin/contenido' },
-    { name: 'Testimonios', icon: MessageSquare, path: '/admin/testimonios' },
-    { name: 'Configuración', icon: Settings, path: '/admin/configuracion' },
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/jyaurum' },
+    { name: 'Productos', icon: Package, path: '/jyaurum/productos' },
+    { name: 'Categorías', icon: Tags, path: '/jyaurum/categorias' },
+    { name: 'Pedidos', icon: ShoppingBag, path: '/jyaurum/pedidos' },
+    { name: 'Clientes', icon: Users, path: '/jyaurum/clientes' },
+    { name: 'Inventario', icon: Database, path: '/jyaurum/inventario' },
+    { name: 'Banners / Contenido', icon: ImageIcon, path: '/jyaurum/contenido' },
+    { name: 'Testimonios', icon: MessageSquare, path: '/jyaurum/testimonios' },
+    { name: 'Configuración', icon: Settings, path: '/jyaurum/configuracion' },
   ];
 
   const handleLogout = () => {
@@ -158,14 +190,7 @@ export function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-6">
-            <div className="hidden lg:flex relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-              <input 
-                type="text" 
-                placeholder="Buscar..."
-                className="bg-white/5 border border-white/10 pl-10 pr-4 py-2 text-xs text-white placeholder:text-white/20 focus:border-brand-accent outline-none transition-all w-64"
-              />
-            </div>
+            {/* Search removed as requested */}
 
             <button 
               onClick={() => setIsLightMode(!isLightMode)}
@@ -190,6 +215,7 @@ export function AdminLayout() {
               <AnimatePresence>
                 {showNotifications && (
                   <motion.div
+                    ref={notificationsRef}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
@@ -207,7 +233,11 @@ export function AdminLayout() {
                         <div className="p-8 text-center text-white/40 text-xs font-light italic">No hay notificaciones recientes</div>
                       ) : (
                         dynamicNotifs.map(n => (
-                          <div key={n.id} className={`p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer ${n.unread ? 'bg-white/[0.02]' : ''}`}>
+                          <div 
+                            key={n.id} 
+                            onClick={() => markAsRead(n.id)}
+                            className={`p-4 border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer ${n.unread ? 'bg-white/[0.02]' : ''}`}
+                          >
                             <div className="flex justify-between items-start mb-1">
                               <p className={`text-xs ${n.unread ? 'text-white font-medium' : 'text-white/60'}`}>{n.title}</p>
                               {n.unread && <span className="w-1.5 h-1.5 rounded-full bg-brand-accent shrink-0 mt-1" />}
@@ -224,11 +254,34 @@ export function AdminLayout() {
 
             <div className="flex items-center gap-4 border-l border-white/10 pl-6 ml-2">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-white tracking-wide">{user?.email?.split('@')[0] || 'Admin'}</p>
-                <p className="text-[9px] text-brand-accent uppercase tracking-widest">Super administrador</p>
+                <div className="flex items-center gap-2 justify-end">
+                   {isEditingName ? (
+                     <input 
+                       autoFocus
+                       className="bg-white/10 border border-brand-accent/30 text-xs py-1 px-2 text-white outline-none w-32"
+                       value={adminNameInput}
+                       onChange={(e) => setAdminNameInput(e.target.value)}
+                       onBlur={() => handleSaveName()}
+                       onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                     />
+                   ) : (
+                     <p 
+                       className="text-xs font-bold text-white tracking-wide cursor-pointer hover:text-brand-accent transition-colors"
+                       onClick={() => setIsEditingName(true)}
+                       title="Haz clic para editar nombre"
+                     >
+                       {siteConfig.adminName || user?.email?.split('@')[0] || 'Admin'}
+                     </p>
+                   )}
+                </div>
+                <p className="text-[9px] text-brand-accent uppercase tracking-widest mt-0.5">Super administrador</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center font-['Cormorant_Garamond'] text-brand-accent text-xl italic font-bold uppercase">
-                {(user?.email || 'A').charAt(0)}
+              <div className="w-10 h-10 rounded-full bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center font-['Cormorant_Garamond'] text-brand-accent text-xl italic font-bold uppercase overflow-hidden">
+                {isEditingName ? (
+                  adminNameInput.charAt(0) || 'A'
+                ) : (
+                  (siteConfig.adminName || user?.email || 'A').charAt(0)
+                )}
               </div>
             </div>
           </div>

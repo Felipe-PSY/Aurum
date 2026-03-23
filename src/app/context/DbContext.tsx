@@ -21,7 +21,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [isInitialized, setIsInitialized] = useState(false);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({
     address: '', whatsappNumber: '', colors: { primary: '', secondary: '', accent: '' },
-    contactEmail: '', instagram: '', businessHours: '', hero: { title: '', subtitle: '', buttonText: '', backgroundImage: '' },
+    contactEmail: '', instagram: '', businessHours: '', adminName: '', 
+    hero: { title: '', subtitle: '', buttonText: '', backgroundImage: '' },
     homeSections: [], banners: [], footerDescription: '', footerSections: []
   });
 
@@ -160,14 +161,15 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   // WRITES TO SUPABASE (and local state optimism)
   
   const addLog = async (type: ActivityLog['type'], message: string, userName: string) => {
+    const finalUserName = siteConfig.adminName || userName;
     const newId = crypto.randomUUID();
     const date = new Date().toISOString();
-    const newLog: ActivityLog = { id: newId, type, message, userName, date };
+    const newLog: ActivityLog = { id: newId, type, message, userName: finalUserName, date };
     
     setActivityLogs(prev => [newLog, ...prev].slice(0, 100));
     
     await supabase.from('activity_logs').insert({
-      id: newId, type, message, user_name: userName, created_at: date
+      id: newId, type, message, user_name: finalUserName, created_at: date
     });
   };
 

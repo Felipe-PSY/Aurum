@@ -286,7 +286,7 @@ export function AdminProductsPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ delay: Math.min(i * 0.05, 0.3) }}
-              className="bg-brand-secondary border border-white/5 group relative overflow-hidden flex flex-col h-full shadow-lg"
+              className="bg-brand-secondary border border-white/5 group relative transition-all duration-300 flex flex-col h-full shadow-lg"
             >
               {/* Image */}
               <div className="relative aspect-square overflow-hidden bg-black/50">

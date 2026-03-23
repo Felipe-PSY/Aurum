@@ -15,7 +15,7 @@ export function AdminLoginPage() {
     e.preventDefault();
     const success = await login({ user: username, pass: password });
     if (success) {
-      navigate('/admin');
+      navigate('/jyaurum');
     } else {
       setError('Credenciales incorrectas');
     }
