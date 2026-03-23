@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Routes, Route, useLocation } from 'react-router';
+import { Routes, Route, useLocation, Navigate } from 'react-router';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { DashboardSkeleton } from './components/Skeletons';
@@ -31,7 +31,7 @@ import { CartProvider } from './context/CartContext';
 // Component to protect admin routes
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) return <AdminLoginPage />;
+  if (!isAuthenticated) return <Navigate to="/jyaurum/login" replace />;
   return <>{children}</>;
 }
 
