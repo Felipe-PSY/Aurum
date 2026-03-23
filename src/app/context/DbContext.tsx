@@ -29,148 +29,204 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     homeSections: [], banners: [], footerDescription: '', footerSections: []
   });
 
-  // INITIAL LOAD: Fetch from Supabase
+  const [isAdminDataLoaded, setIsAdminDataLoaded] = useState(false);
+
+  // 1. CRITICAL INITIAL LOAD (Storefront)
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStorefrontData = async () => {
       try {
         const [
           { data: configData },
           { data: catData },
           { data: occData },
-          { data: prodData },
-          { data: ordersData },
-          { data: testData },
-          { data: logsData }
+          { data: prodData }
         ] = await Promise.all([
           supabase.from('site_config').select('data').eq('id', 1).single(),
-          supabase.from('categories').select('*').order('order_index'),
-          supabase.from('occasions').select('*'),
-          supabase.from('products').select('*, product_occasions(occasion_id)').limit(PAGE_SIZE),
-          supabase.from('orders').select('*, order_items(*, products(name))').order('created_at', { ascending: false }).limit(PAGE_SIZE),
-          supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
-          supabase.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100)
+          supabase.from('categories').select('id, name, is_active, sub_categories').order('order_index'),
+          supabase.from('occasions').select('id, name'),
+          supabase.from('products')
+            .select('id, code, name, description, price, previous_price, gender, image, category, sub_category, is_featured, stock, product_occasions(occasion_id)')
+            .order('is_featured', { ascending: false })
+            .limit(30)
         ]);
 
         if (configData) setSiteConfig(configData.data as SiteConfig);
 
-        // 2. Categories & Subcategories
+        // Categories
         let mappedCats: Category[] = catData?.map((c: any) => ({
-          id: c.id,
-          name: c.name,
-          isActive: c.is_active,
-          subCategories: c.sub_categories || [] 
+          id: c.id, name: c.name, isActive: c.is_active, subCategories: c.sub_categories || [] 
         })) || [];
         
-        // Emulate or Update Occasions Category
         if (occData && occData.length > 0) {
-          const occSubNames = Array.from(new Set(occData.map((o: any) => o.name))); // Unique names
+          const occSubNames = Array.from(new Set(occData.map((o: any) => o.name)));
           const existingOccIdx = mappedCats.findIndex(c => c.id === 'ocasiones');
-          
           if (existingOccIdx !== -1) {
-            // Merge with existing row if found
             mappedCats[existingOccIdx].subCategories = occSubNames;
           } else {
-            // Add manually if missing from table
-            mappedCats.push({
-              id: 'ocasiones',
-              name: 'Ocasiones',
-              subCategories: occSubNames,
-              isActive: true
-            });
+            mappedCats.push({ id: 'ocasiones', name: 'Ocasiones', subCategories: occSubNames, isActive: true });
           }
         }
         setCategories(mappedCats);
 
-        // 3. Products
+        // Products (List view optimized)
         if (prodData) {
-          const mappedProd: Product[] = prodData.map((p: any) => ({
-            id: p.id,
-            code: p.code,
-            name: p.name,
-            description: p.description,
-            price: Number(p.price),
-            previousPrice: p.previous_price ? Number(p.previous_price) : undefined,
-            gender: p.gender as any,
-            image: p.image,
-            category: p.category,
-            subCategory: p.sub_category,
-            isFeatured: p.is_featured,
-            stock: p.stock,
+          setProducts(prodData.map((p: any) => ({
+            id: p.id, code: p.code, name: p.name, description: p.description,
+            price: Number(p.price), previousPrice: p.previous_price ? Number(p.previous_price) : undefined,
+            gender: p.gender as any, image: p.image, category: p.category, subCategory: p.sub_category,
+            isFeatured: p.is_featured, stock: p.stock,
             occasion: p.product_occasions?.map((po: any) => po.occasion_id) || []
-          }));
-          setProducts(mappedProd);
+          })));
+          if (prodData.length < PAGE_SIZE) setHasMoreProducts(false);
         }
 
-        // 4. Orders
-        if (ordersData) {
-           const mappedOrders: Order[] = ordersData.map((o: any) => {
-             const nameParts = o.customer_name ? o.customer_name.split(' ') : [''];
-             return {
-             id: o.id,
-             date: o.created_at,
-             status: o.status as any,
-             stockDeducted: o.stock_deducted || false,
-             total: Number(o.total),
-             customer: {
-               nombre: nameParts[0] || '',
-               apellido: nameParts.slice(1).join(' ') || '',
-               telefono: o.customer_phone || '',
-               direccion: o.customer_address || ''
-             },
-             metodoPago: o.notes || 'Transferencia',
-             items: o.order_items.map((oi: any) => ({
-                 productId: oi.product_id,
-                 name: oi.products?.name || 'Agregado',
-                 quantity: oi.quantity,
-                 price: Number(oi.price_at_time)
-             }))
-           }});
-           setOrders(mappedOrders);
-        }
+        // Set initialized EARLY for storefront
+        setIsInitialized(true);
 
-        // 5. Testimonials
+        // Fetch Testimonials (Secondary but needed for home)
+        const { data: testData } = await supabase
+          .from('testimonials')
+          .select('id, author, role, content, rating, is_approved, created_at')
+          .eq('is_approved', true)
+          .order('created_at', { ascending: false });
+        
         if (testData) {
-           setTestimonials(testData.map((t: any) => ({
-             id: t.id,
-             name: t.author,
-             title: t.role,
-             text: t.content,
-             rating: t.rating,
-             isVisible: t.is_approved,
-             date: t.created_at
-           })));
-        }
-
-        // 6. Activity Logs
-        if (logsData) {
-          setActivityLogs(logsData.map((l: any) => ({
-            id: l.id,
-            type: l.type as any,
-            message: l.message,
-            userName: l.user_name,
-            date: l.created_at
+          setTestimonials(testData.map((t: any) => ({
+            id: t.id, name: t.author, title: t.role, text: t.content, rating: t.rating, isVisible: t.is_approved, date: t.created_at
           })));
         }
 
-        // Set pagination flags
-        if (prodData && prodData.length < PAGE_SIZE) setHasMoreProducts(false);
-        if (ordersData && ordersData.length < PAGE_SIZE) setHasMoreOrders(false);
-
       } catch (err) {
-        console.error("Error fetching data from Supabase:", err);
-      } finally {
-        setIsInitialized(true);
+        console.error("Error fetching storefront data:", err);
+        setIsInitialized(true); // Don't block app even if errors
       }
     };
 
-    fetchData();
+    fetchStorefrontData();
   }, []);
+
+  // 2. DEFERRED ADMIN LOAD (only when context suggests it or lazily)
+  // For now, we fetch it immediately after critical load but without blocking the UI
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const fetchAdminData = async () => {
+      try {
+        const [
+          { data: ordersData },
+          { data: logsData }
+        ] = await Promise.all([
+          supabase.from('orders')
+            .select('*, order_items(*, products(name))')
+            .order('created_at', { ascending: false })
+            .limit(PAGE_SIZE),
+          supabase.from('activity_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(100)
+        ]);
+
+        if (ordersData) {
+           setOrders(ordersData.map((o: any) => {
+             const nameParts = o.customer_name ? o.customer_name.split(' ') : [''];
+             return {
+               id: o.id, date: o.created_at, status: o.status as any, stockDeducted: o.stock_deducted || false, total: Number(o.total),
+               customer: { nombre: nameParts[0] || '', apellido: nameParts.slice(1).join(' ') || '', telefono: o.customer_phone || '', direccion: o.customer_address || '' },
+               metodoPago: o.notes || 'Transferencia',
+               items: o.order_items.map((oi: any) => ({ productId: oi.product_id, name: oi.products?.name || 'Agregado', quantity: oi.quantity, price: Number(oi.price_at_time) }))
+             };
+           }));
+           if (ordersData.length < PAGE_SIZE) setHasMoreOrders(false);
+        }
+
+        if (logsData) {
+          setActivityLogs(logsData.map((l: any) => ({
+            id: l.id, type: l.type as any, message: l.message, userName: l.user_name, date: l.created_at
+          })));
+        }
+        
+        setIsAdminDataLoaded(true);
+      } catch (err) {
+        console.error("Error fetching admin data:", err);
+      }
+    };
+
+    fetchAdminData();
+  }, [isInitialized]);
+
+  // 3. OPTIMIZED REALTIME SUBSCRIPTIONS
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    // Critical storefront subscriptions
+    const storefrontChannel = supabase.channel('storefront-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async (payload) => {
+        if (payload.eventType === 'DELETE') {
+          setProducts(prev => prev.filter(p => p.id !== payload.old.id));
+        } else {
+          const { data } = await supabase.from('products')
+            .select('id, code, name, description, price, previous_price, gender, image, category, sub_category, is_featured, stock, product_occasions(occasion_id)')
+            .eq('id', payload.new.id)
+            .single();
+          if (data) {
+            const mapped: Product = {
+              id: data.id, code: data.code, name: data.name, description: data.description,
+              price: Number(data.price), previousPrice: data.previous_price ? Number(data.previous_price) : undefined,
+              gender: data.gender as any, image: data.image, category: data.category, subCategory: data.sub_category,
+              isFeatured: data.is_featured, stock: data.stock, occasion: data.product_occasions?.map((po: any) => po.occasion_id) || []
+            };
+            setProducts(prev => {
+              if (payload.eventType === 'INSERT') return prev.some(p => p.id === mapped.id) ? prev : [...prev, mapped];
+              return prev.map(p => p.id === mapped.id ? mapped : p);
+            });
+          }
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_config' }, (payload) => {
+         if (payload.new.id === 1) setSiteConfig(payload.new.data as SiteConfig);
+      })
+      .subscribe();
+
+    // Admin/Deferred subscriptions (could be initiated only on admin routes)
+    const adminChannel = supabase.channel('admin-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async (payload) => {
+        if (payload.eventType === 'DELETE') {
+          setOrders(prev => prev.filter(o => o.id !== payload.old.id));
+        } else {
+          const { data } = await supabase.from('orders').select('*, order_items(*, products(name))').eq('id', payload.new.id).single();
+          if (data) {
+            const nameParts = data.customer_name ? data.customer_name.split(' ') : [''];
+            const mapped: Order = {
+              id: data.id, date: data.created_at, status: data.status as any, stockDeducted: data.stock_deducted || false,
+              total: Number(data.total), customer: { nombre: nameParts[0] || '', apellido: nameParts.slice(1).join(' ') || '', telefono: data.customer_phone || '', direccion: data.customer_address || '' },
+              metodoPago: data.notes || 'Transferencia',
+              items: data.order_items.map((oi: any) => ({ productId: oi.product_id, name: oi.products?.name || 'Agregado', quantity: oi.quantity, price: Number(oi.price_at_time) }))
+            };
+            setOrders(prev => {
+              if (payload.eventType === 'INSERT') return [mapped, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+              return prev.map(o => o.id === mapped.id ? mapped : o);
+            });
+          }
+        }
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, (payload) => {
+         const l = payload.new;
+         const mapped: ActivityLog = { id: l.id, type: l.type as any, message: l.message, userName: l.user_name, date: l.created_at };
+         setActivityLogs(prev => prev.some(log => log.id === mapped.id) ? prev : [mapped, ...prev].slice(0, 100));
+      })
+      .subscribe();
+
+    return () => { 
+      supabase.removeChannel(storefrontChannel);
+      supabase.removeChannel(adminChannel);
+    };
+  }, [isInitialized]);
 
   const loadMoreProducts = async () => {
     if (!hasMoreProducts) return;
     const { data } = await supabase
       .from('products')
-      .select('*, product_occasions(occasion_id)')
+      .select('id, code, name, description, price, previous_price, gender, image, category, sub_category, is_featured, stock, product_occasions(occasion_id)')
       .range(products.length, products.length + PAGE_SIZE - 1);
     
     if (data) {
@@ -206,90 +262,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
        if (data.length < PAGE_SIZE) setHasMoreOrders(false);
     }
   };
-
-  // REALTIME SUBSCRIPTIONS
-  useEffect(() => {
-    if (!isInitialized) return;
-
-    const channel = supabase.channel('aurum-db-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async (payload) => {
-        if (payload.eventType === 'DELETE') {
-          setProducts(prev => prev.filter(p => p.id !== payload.old.id));
-        } else {
-          const { data } = await supabase.from('products').select('*, product_occasions(occasion_id)').eq('id', payload.new.id).single();
-          if (data) {
-            const mapped: Product = {
-              id: data.id, code: data.code, name: data.name, description: data.description,
-              price: Number(data.price), previousPrice: data.previous_price ? Number(data.previous_price) : undefined,
-              gender: data.gender as any, image: data.image, category: data.category, subCategory: data.sub_category,
-              isFeatured: data.is_featured, stock: data.stock, occasion: data.product_occasions?.map((po: any) => po.occasion_id) || []
-            };
-            setProducts(prev => {
-              if (payload.eventType === 'INSERT') {
-                return prev.some(p => p.id === mapped.id) ? prev : [...prev, mapped];
-              }
-              return prev.map(p => p.id === mapped.id ? mapped : p);
-            });
-          }
-        }
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async (payload) => {
-        if (payload.eventType === 'DELETE') {
-          setOrders(prev => prev.filter(o => o.id !== payload.old.id));
-        } else {
-          const { data } = await supabase.from('orders').select('*, order_items(*, products(name))').eq('id', payload.new.id).single();
-          if (data) {
-            const nameParts = data.customer_name ? data.customer_name.split(' ') : [''];
-            const mapped: Order = {
-              id: data.id, date: data.created_at, status: data.status as any, stockDeducted: data.stock_deducted || false,
-              total: Number(data.total), customer: { nombre: nameParts[0] || '', apellido: nameParts.slice(1).join(' ') || '', telefono: data.customer_phone || '', direccion: data.customer_address || '' },
-              metodoPago: data.notes || 'Transferencia',
-              items: data.order_items.map((oi: any) => ({ productId: oi.product_id, name: oi.products?.name || 'Agregado', quantity: oi.quantity, price: Number(oi.price_at_time) }))
-            };
-            setOrders(prev => {
-              if (payload.eventType === 'INSERT') {
-                return prev.some(o => o.id === mapped.id) ? prev : [mapped, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-              }
-              return prev.map(o => o.id === mapped.id ? mapped : o);
-            });
-          }
-        }
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, async () => {
-         const { data: catData } = await supabase.from('categories').select('*').order('order_index');
-         if (catData) {
-            setCategories(prev => {
-               const newCats: Category[] = catData.map((c: any) => ({ id: c.id, name: c.name, isActive: c.is_active, subCategories: c.sub_categories || [] }));
-               const occ = prev.find(p => p.id === 'ocasiones');
-               if (occ) newCats.push(occ);
-               return newCats;
-            });
-         }
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, (payload) => {
-         const l = payload.new;
-         const mapped: ActivityLog = { id: l.id, type: l.type as any, message: l.message, userName: l.user_name, date: l.created_at };
-         setActivityLogs(prev => prev.some(log => log.id === mapped.id) ? prev : [mapped, ...prev].slice(0, 100));
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_config' }, (payload) => {
-         if (payload.new.id === 1) setSiteConfig(payload.new.data as SiteConfig);
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'testimonials' }, (payload) => {
-         if (payload.eventType === 'DELETE') {
-            setTestimonials(prev => prev.filter(t => t.id !== payload.old.id));
-         } else {
-            const t = payload.new;
-            const mapped: Testimonial = { id: t.id, name: t.author, title: t.role, text: t.content, rating: t.rating, isVisible: t.is_approved, date: t.created_at };
-            setTestimonials(prev => {
-               if (payload.eventType === 'INSERT') return prev.some(test => test.id === mapped.id) ? prev : [mapped, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-               return prev.map(test => test.id === mapped.id ? mapped : test);
-            });
-         }
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [isInitialized]);
 
   // Sync colors
   useEffect(() => {
@@ -592,6 +564,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     activityLogs, 
     testimonials,
     isInitialized,
+    isAdminDataLoaded,
     updateProduct,
     addProduct,
     deleteProduct,
@@ -619,6 +592,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     siteConfig, 
     testimonials, 
     isInitialized, 
+    isAdminDataLoaded,
     updateProduct, 
     addProduct, 
     deleteProduct, 

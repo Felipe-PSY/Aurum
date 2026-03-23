@@ -214,7 +214,7 @@ export function CatalogPage() {
                     transition={{ duration: 0.5 }}
                   >
                     {filteredProducts.map((product, index) => (
-                      <ProductCard key={product.id} product={product} index={index} />
+                      <ProductCard key={product.id} product={product} index={index} priority={index < 3} />
                     ))}
                   </motion.div>
 

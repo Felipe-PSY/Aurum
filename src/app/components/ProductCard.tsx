@@ -9,9 +9,10 @@ import { useCart } from '../context/CartContext';
 interface ProductCardProps {
   product: Product;
   index: number;
+  priority?: boolean;
 }
 
-export const ProductCard = memo(({ product, index }: ProductCardProps) => {
+export const ProductCard = memo(({ product, index, priority }: ProductCardProps) => {
   const { cart, addToCart, updateQuantity } = useCart();
   const cartItem = cart.find(item => item.id === product.id);
   const formattedPrice = new Intl.NumberFormat('es-CO', {
@@ -36,6 +37,7 @@ export const ProductCard = memo(({ product, index }: ProductCardProps) => {
             src={product.image} 
             alt={product.name} 
             className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+            priority={priority}
           />
           
           {/* Capa de Brillo al Hoover */}

@@ -15,6 +15,7 @@ export function HeroSection() {
           src={hero.backgroundImage}
           alt={hero.title}
           className="w-full h-full object-cover"
+          priority
         />
         {/* Capa de Degradado */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80"></div>

@@ -55,6 +55,7 @@ export function ProductSection() {
                     src={product.image}
                     alt={product.name}
                     className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-75"
+                    priority={index < 2}
                   />
                   
                   {/* Superposición al Pasar el Cursor */}

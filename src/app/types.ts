@@ -111,6 +111,7 @@ export interface DbContextType {
   activityLogs: ActivityLog[];
   testimonials: Testimonial[];
   isInitialized: boolean;
+  isAdminDataLoaded: boolean;
   hasMoreProducts: boolean;
   hasMoreOrders: boolean;
   loadMoreProducts: () => Promise<void>;

@@ -21,10 +21,13 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { useDb } from '../context/DbContext';
+import { DashboardSkeleton } from '../components/Skeletons';
 
 export function AdminDashboard() {
-  const { products, orders } = useDb();
+  const { products, orders, isAdminDataLoaded } = useDb();
   const [timeFilter, setTimeFilter] = useState<number>(7);
+
+  if (!isAdminDataLoaded) return <DashboardSkeleton />;
 
   // Dynamic Greeting
   const hour = new Date().getHours();
