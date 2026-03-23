@@ -266,40 +266,45 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
 
   const updateCategories = async (cats: Category[]) => {
-    // 1. Identificar si es una eliminación, adición o actualización simple
-    const oldCats = categories;
+    const oldCats = [...categories];
     setCategories(cats); // Optimismo
 
-    // Logica de sincronización con DB
-    if (cats.length > oldCats.length) {
-      // ADICIÓN DE CATEGORÍA
-      const newCat = cats.find(c => !oldCats.find(oc => oc.id === c.id));
-      if (newCat) {
-        if (newCat.id !== 'ocasiones') {
-          await supabase.from('categories').insert({
+    try {
+      if (cats.length > oldCats.length) {
+        // ADICIÓN DE CATEGORÍA
+        const newCat = cats.find(c => !oldCats.find(oc => oc.id === c.id));
+        if (newCat && newCat.id !== 'ocasiones') {
+          const { error } = await supabase.from('categories').insert({
             id: newCat.id,
             name: newCat.name,
             is_active: newCat.isActive,
-            sub_categories: newCat.subCategories,
+            sub_categories: newCat.subCategories || [],
             order_index: cats.length
           });
+          if (error) throw error;
           addLog('config', `Nueva categoría creada: ${newCat.name}`, 'Sistema');
         }
-      }
-    } else if (cats.length < oldCats.length) {
-      // ELIMINACIÓN
-      const deletedCat = oldCats.find(oc => !cats.find(c => c.id === oc.id));
-      if (deletedCat && deletedCat.id !== 'ocasiones') {
-        await supabase.from('categories').delete().eq('id', deletedCat.id);
-        addLog('config', `Categoría eliminada: ${deletedCat.name}`, 'Sistema');
-      }
-    } else {
-      // ACTUALIZACION / ESTADO / SUBCATEGORIAS
+      } else if (cats.length < oldCats.length) {
+        // ELIMINACIÓN
+        const deletedCat = oldCats.find(oc => !cats.find(c => c.id === oc.id));
+        if (deletedCat && deletedCat.id !== 'ocasiones') {
+          const { error } = await supabase.from('categories').delete().eq('id', deletedCat.id);
+          if (error) throw error;
+          addLog('config', `Categoría eliminada: ${deletedCat.name}`, 'Sistema');
+        }
+      } 
+      
+      // Siempre sincronizar estados y subcategorías para todas las existentes
       for (const cat of cats) {
         const oldCat = oldCats.find(oc => oc.id === cat.id);
-        if (JSON.stringify(cat) !== JSON.stringify(oldCat)) {
+        // Comparamos nombre, estado y subcategorías
+        const hasChanged = !oldCat || 
+          cat.name !== oldCat.name || 
+          cat.isActive !== oldCat.isActive || 
+          JSON.stringify(cat.subCategories) !== JSON.stringify(oldCat.subCategories);
+
+        if (hasChanged) {
           if (cat.id === 'ocasiones') {
-            // Sincronizar tabla de Occasions si las subcategorías de la categoría virtual cambiaron
             const oldSubs = oldCat?.subCategories || [];
             const newSubs = cat.subCategories || [];
             
@@ -307,7 +312,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
             const added = newSubs.filter(s => !oldSubs.includes(s));
             for (const name of added) {
                await supabase.from('occasions').insert({
-                 id: name.toLowerCase().replace(/\s+/g, '-'),
+                 id: name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-'),
                  name: name
                });
             }
@@ -317,15 +322,27 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                await supabase.from('occasions').delete().eq('name', name);
             }
           } else {
-            // Categoría normal
-            await supabase.from('categories').update({
+            const { error } = await supabase.from('categories').update({
               name: cat.name,
               is_active: cat.isActive,
-              sub_categories: cat.subCategories
+              sub_categories: cat.subCategories || []
             }).eq('id', cat.id);
+            if (error) {
+              console.error("Error updating category:", error);
+              // Si el error es que la columna no existe, avisamos al usuario (silenciosamente en log por ahora)
+              if (error.message.includes('sub_categories')) {
+                addLog('system', 'ERROR: Falta columna sub_categories en base de datos.', 'Admin');
+              }
+              throw error;
+            }
           }
         }
       }
+    } catch (err) {
+      console.error("Critical error in updateCategories:", err);
+      // Revertir optimismo si falla
+      setCategories(oldCats);
+      alert("Error al guardar cambios en las categorías. Por favor verifica tu conexión o base de datos.");
     }
   };
 
