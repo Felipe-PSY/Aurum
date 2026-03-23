@@ -1,0 +1,19 @@
+Contact: mailto:contacto@aurumjoyeria.com
+Expires: 2027-03-23T00:00:00.000Z
+Preferred-Languages: es, en
+Canonical: https://aurumjoyeria.com/.well-known/security.txt
+Policy: https://aurumjoyeria.com/.well-known/security.txt
+
+# Política de Divulgación Responsable — Aurum Joyería
+#
+# Si descubres una vulnerabilidad de seguridad en nuestro sitio,
+# te pedimos que la reportes de forma responsable antes de hacerla
+# pública, enviándonos un correo a la dirección indicada arriba.
+#
+# Nos comprometemos a:
+#   - Acusar recibo en menos de 5 días hábiles
+#   - Investigar y resolver problemas válidos de forma prioritaria
+#   - No tomar acciones legales contra investigadores de buena fe
+#
+# Alcance: *.aurumjoyeria.com
+# Fuera de alcance: ataques de fuerza bruta, spam o ingeniería social

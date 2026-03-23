@@ -25,3 +25,8 @@ dist-ssr
 
 # TypeScript
 *.tsbuildinfo
+
+# Environment variables — never commit secrets
+.env
+.env.*
+!.env.example
