@@ -1,4 +1,20 @@
-import { Product as BaseProduct } from './data/products';
+export interface Product {
+  id: number | string;
+  name: string;
+  category: string;
+  subCategory?: string;
+  gender: 'Hombre' | 'Mujer';
+  price: number;
+  image: string;
+  occasion?: string[];
+  description?: string;
+  isNew?: boolean;
+  isFeatured?: boolean;
+  stock?: number;
+  code?: string;
+  previousPrice?: number;
+}
+
 
 export interface Testimonial {
   id: string;
@@ -10,7 +26,7 @@ export interface Testimonial {
   isVisible: boolean;
 }
 
-export type Product = BaseProduct;
+
 
 export interface HeroConfig {
   title: string;

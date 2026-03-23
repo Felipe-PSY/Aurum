@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { ShoppingBag, Plus, Minus } from 'lucide-react';
 import { Link } from 'react-router';
 import { ImageWithFallback } from './ImageWithFallback';
-import { Product } from '../data/products';
+import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 
 interface ProductCardProps {
