@@ -173,26 +173,34 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   const addProduct = async (p: Product) => {
     try {
-      const newId = crypto.randomUUID();
-      const { error } = await supabase.from('products').insert({
-        id: newId, code: p.code, name: p.name, description: p.description, price: p.price,
+      const { data, error } = await supabase.from('products').insert({
+        code: p.code, name: p.name, description: p.description, price: p.price,
         previous_price: p.previousPrice, gender: p.gender, image: p.image,
         category: p.category, sub_category: p.subCategory, is_featured: p.isFeatured, stock: p.stock
-      });
+      }).select().single();
       
       if (error) throw error;
+      if (!data) throw new Error("No se devolvieron datos del servidor");
+
+      const savedProduct: Product = {
+        ...p,
+        id: data.id,
+        price: Number(data.price),
+        previousPrice: data.previous_price ? Number(data.previous_price) : undefined
+      };
 
       if (p.occasion && p.occasion.length > 0) {
-        const occs = p.occasion.map(o => ({ product_id: newId, occasion_id: o.toLowerCase() }));
+        const occs = p.occasion.map(o => ({ product_id: data.id, occasion_id: o.toLowerCase() }));
         const { error: occError } = await supabase.from('product_occasions').insert(occs);
         if (occError) console.error("Error occasions:", occError);
       }
       
-      setProducts(prev => [...prev, { ...p, id: newId }]); 
+      setProducts(prev => [...prev, savedProduct]); 
       await addLog('product', `Nuevo producto creado: ${p.name}`, 'Sistema');
+      alert(`¡Producto guardado exitosamente con ID: ${data.id}!`);
     } catch (err: any) {
       console.error("Error creating product:", err);
-      alert(`Error al guardar producto: ${err.message || 'Error en servidor'}`);
+      alert(`ERROR: ${err.message || 'Error en servidor'}`);
     }
   };
 
