@@ -72,7 +72,7 @@ export function AdminProductsPage() {
     return matchSearch && matchCat && matchGen;
   });
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: number | string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.')) {
       const p = products.find(prod => prod.id === id);
       deleteProduct(id);
@@ -315,7 +315,7 @@ export function AdminProductsPage() {
                         <button onClick={() => handleDuplicate(product)} className="flex items-center gap-3 px-3 py-2 text-[10px] text-white/60 hover:text-white hover:bg-white/5 transition-all uppercase tracking-widest">
                           <Copy className="w-3 h-3" /> Duplicar
                         </button>
-                        <button onClick={() => handleDelete(Number(product.id))} className="flex items-center gap-3 px-3 py-2 text-[10px] text-red-400/60 hover:text-red-400 hover:bg-red-400/5 transition-all uppercase tracking-widest">
+                        <button onClick={() => handleDelete(product.id)} className="flex items-center gap-3 px-3 py-2 text-[10px] text-red-400/60 hover:text-red-400 hover:bg-red-400/5 transition-all uppercase tracking-widest">
                           <Trash2 className="w-3 h-3" /> Eliminar
                         </button>
                       </div>

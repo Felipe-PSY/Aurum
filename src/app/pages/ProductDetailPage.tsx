@@ -15,11 +15,11 @@ export function ProductDetailPage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const product = useMemo(() => 
-    products.find(p => p.id === Number(id)), 
+    products.find(p => String(p.id) === id), 
   [id]);
 
   const cartItem = useMemo(() => 
-    cart.find(item => item.id === Number(id)), 
+    cart.find(item => String(item.id) === id), 
   [cart, id]);
 
   const relatedProducts = useMemo(() => {

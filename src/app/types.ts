@@ -52,8 +52,8 @@ export interface Category {
 }
 
 export interface OrderItem {
-  id?: number;
-  productId?: number;
+  id?: number | string;
+  productId?: number | string;
   name: string;
   price: number;
   quantity: number;
@@ -111,7 +111,7 @@ export interface DbContextType {
   testimonials: Testimonial[];
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
-  deleteProduct: (id: number) => void;
+  deleteProduct: (id: number | string) => void;
   addOrder: (order: Omit<Order, 'id' | 'date' | 'status'>) => void;
   updateOrderStatus: (id: string, status: Order['status']) => void;
   updateSiteConfig: (config: SiteConfig) => void;
