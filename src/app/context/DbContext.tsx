@@ -365,6 +365,18 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     }
   };
 
+  const deleteOrder = async (id: string) => {
+    try {
+      const { error } = await supabase.from('orders').delete().eq('id', id);
+      if (error) throw error;
+      setOrders(prev => prev.filter(o => o.id !== id));
+      await addLog('order', `Pedido #${id.slice(-6).toUpperCase()} eliminado permanentemente`, 'Sistema');
+    } catch (err: any) {
+      console.error("Error deleting order:", err);
+      // alert removed
+    }
+  };
+
   const updateOrderStatus = async (id: string, status: Order['status']) => {
     try {
       const order = orders.find(o => o.id === id);
@@ -527,7 +539,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const contextValue = React.useMemo(() => ({
     products, categories, orders, siteConfig, activityLogs, testimonials,
     addProduct, updateProduct, deleteProduct, 
-    addOrder, updateOrderStatus, updateSiteConfig, updateCategories,
+    addOrder, updateOrderStatus, deleteOrder, updateSiteConfig, updateCategories,
     updateAllPrices, undoLastPriceAdjustment, canUndoPriceAdjustment,
     addLog, addTestimonial, updateTestimonial, deleteTestimonial 
   }), [

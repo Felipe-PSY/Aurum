@@ -115,6 +115,7 @@ export interface DbContextType {
   deleteProduct: (id: number | string) => void;
   addOrder: (order: Omit<Order, 'id' | 'date' | 'status'>) => void;
   updateOrderStatus: (id: string, status: Order['status']) => void;
+  deleteOrder: (id: string) => void;
   updateSiteConfig: (config: SiteConfig) => void;
   updateCategories: (categories: Category[]) => void;
   updateAllPrices: (percentage: number) => void;

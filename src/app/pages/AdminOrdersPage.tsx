@@ -8,13 +8,14 @@ import {
   Eye, 
   MessageCircle, 
   User as UserIcon,
-  XCircle
+  XCircle,
+  Trash2
 } from 'lucide-react';
 import { CustomDropdown } from '../components/CustomDropdown';
 import { Order } from '../types';
 
 export function AdminOrdersPage() {
-  const { orders, updateOrderStatus, addLog } = useDb();
+  const { orders, updateOrderStatus, deleteOrder, addLog } = useDb();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -122,6 +123,17 @@ export function AdminOrdersPage() {
                         title="Contactar Cliente"
                       >
                         <MessageCircle className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if (window.confirm(`¿Estás seguro de eliminar permanentemente el pedido #${order.id.slice(-6).toUpperCase()}?`)) {
+                            deleteOrder(order.id);
+                          }
+                        }}
+                        className="p-2 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                        title="Eliminar Pedido"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
