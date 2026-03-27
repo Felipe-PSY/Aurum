@@ -140,6 +140,8 @@ export function Footer() {
               );
             })}
           </motion.div>
+          <span className="text-[10px] opacity-30 hover:opacity-60 transition-opacity font-light tracking-tighter normal-case">Nexo_Group</span>
+
         </div>
       </div>
 
