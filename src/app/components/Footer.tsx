@@ -118,7 +118,7 @@ export function Footer() {
             © 2026 Aurum. Todos los derechos reservados. | Política de Privacidad | Términos de Servicio
           </motion.p>
 
-          /* Enlaces de Redes Sociales */
+          {/* Enlaces de Redes Sociales */}
           <motion.div
             className="flex gap-4 order-1 md:order-2"
             initial={{ opacity: 0 }}
