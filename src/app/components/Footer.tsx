@@ -111,10 +111,14 @@ export function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
+            <div>
+
+              <span className="text-[10px] opacity-30 hover:opacity-60 transition-opacity font-light tracking-tighter normal-case">Nexo_Group</span>
+            </div>
             © 2026 Aurum. Todos los derechos reservados. | Política de Privacidad | Términos de Servicio
           </motion.p>
 
-          {/* Enlaces de Redes Sociales */}
+          /* Enlaces de Redes Sociales */
           <motion.div
             className="flex gap-4 order-1 md:order-2"
             initial={{ opacity: 0 }}
@@ -140,9 +144,6 @@ export function Footer() {
               );
             })}
           </motion.div>
-          <div>
-            <span className="text-[10px] opacity-30 hover:opacity-60 transition-opacity font-light tracking-tighter normal-case">Nexo_Group</span>
-          </div>
         </div>
       </div>
 

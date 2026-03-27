@@ -138,25 +138,6 @@ export function LuxuryExperienceSection() {
           </motion.div>
         </div>
 
-        {/* Sección de Llamada a la Acción (CTA) */}
-        <motion.div
-          className="text-center bg-black text-white py-16 px-8"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-        >
-          <h3 className="font-['Cormorant_Garamond'] text-3xl md:text-4xl mb-4" style={{ fontWeight: 300 }}>
-            Programe una Consulta Privada
-          </h3>
-          <p className="font-['Montserrat'] text-brand-text mb-8 max-w-xl mx-auto" style={{ fontWeight: 300 }}>
-            Descubra nuestra colección en persona con un especialista en joyería dedicado
-          </p>
-          <button className="group relative inline-flex items-center gap-2 px-10 py-4 bg-transparent border border-brand-accent text-brand-accent font-['Montserrat'] tracking-widest overflow-hidden transition-all duration-500 hover:text-black" style={{ fontWeight: 400, fontSize: '0.875rem', letterSpacing: '0.15em' }}>
-            <span className="absolute inset-0 bg-brand-accent translate-x-full group-hover:translate-y-0 transition-transform duration-500"></span>
-            <span className="relative z-10">RESERVAR CITA</span>
-          </button>
-        </motion.div>
       </div>
     </section>
   );
