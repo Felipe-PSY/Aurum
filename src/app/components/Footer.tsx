@@ -112,8 +112,7 @@ export function Footer() {
             transition={{ duration: 0.6, delay: 0.4 }}
           >
             <div>
-
-              <span className="text-[10px] opacity-30 hover:opacity-60 transition-opacity font-light tracking-tighter normal-case">Nexo_Group</span>
+              <span className="text-[10px] opacity-10 hover:opacity-60 transition-opacity font-light tracking-tighter normal-case">Nexo_Group</span>
             </div>
             © 2026 Aurum. Todos los derechos reservados. | Política de Privacidad | Términos de Servicio
           </motion.p>
